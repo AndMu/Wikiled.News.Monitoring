@@ -36,7 +36,11 @@ namespace Wikiled.News.Monitoring.Retriever
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             var httpStatusCodesWorthRetrying = config.LongRetryCodes.Concat(config.RetryCodes).ToArray();
             policy = Policy
-                     .Handle<WebException>(r => httpStatusCodesWorthRetrying.Contains(((HttpWebResponse)r.Response).StatusCode))
+                     .Handle<WebException>(exception =>
+                     {
+                         var response = (HttpWebResponse)exception.Response;
+                         return response != null && httpStatusCodesWorthRetrying.Contains(response.StatusCode);
+                     })
                      .WaitAndRetryAsync(5,
                          (retries, ex, ctx) => ExecutionRoutine(logger, config, ex, retries),
                          (ts, i, ctx, task) => Task.CompletedTask);

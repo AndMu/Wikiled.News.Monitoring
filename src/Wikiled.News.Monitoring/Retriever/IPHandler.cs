@@ -26,7 +26,7 @@ namespace Wikiled.News.Monitoring.Retriever
                 throw new ArgumentException("Max concurrency can not be less than 1", nameof(config.MaxConcurrent));
             }
 
-            var ips = config.Ips?.Length >= 1 ? config.Ips.Select(IPAddress.Parse).ToArray() : new[] { IPAddress.Loopback };
+            var ips = config.Ips?.Length >= 1 ? config.Ips.Select(IPAddress.Parse).ToArray() : new[] { IPAddress.Any };
 
             for (var i = 0; i < config.MaxConcurrent; i++)
             {
