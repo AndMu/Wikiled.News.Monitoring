@@ -13,29 +13,23 @@ namespace Wikiled.News.Monitoring.Readers
 
         private readonly ISessionReader sessionReader;
 
-        private readonly IDefinitionTransformer transformer;
-
-        public ArticleDataReader(ILoggerFactory loggerFactory, ISessionReader sessionReader, IDefinitionTransformer transformer)
+        public ArticleDataReader(ILoggerFactory loggerFactory, ISessionReader sessionReader)
         {
             this.sessionReader = sessionReader ?? throw new ArgumentNullException(nameof(sessionReader));
-            this.transformer = transformer ?? throw new ArgumentNullException(nameof(transformer));
             logger = loggerFactory?.CreateLogger<ArticleDataReader>() ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<Article> Read(ArticleDefinition definition, CancellationToken token)
         {
             logger.LogDebug("Reading article: {0}[{1}]", definition.Title, definition.Id);
-            definition = transformer.Transform(definition);
             var comments = ReadComments(definition, token);
             var readArticle = sessionReader.ReadArticle(definition, token);
             return new Article(definition, await comments.ConfigureAwait(false), await readArticle.ConfigureAwait(false), DateTime.UtcNow);
         }
 
-        private async Task<CommentData[]> ReadComments(ArticleDefinition definition, CancellationToken token)
+        public Task<CommentData[]> ReadComments(ArticleDefinition definition, CancellationToken token)
         {
-            var commentsReader = sessionReader.GetCommentsReader(definition);
-            var result = await commentsReader.ReadAllComments(token).ToArray();
-            return result;
+            return sessionReader.ReadComments(definition, token);
         }
     }
 }

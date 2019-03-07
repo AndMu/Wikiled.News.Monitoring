@@ -18,13 +18,13 @@ namespace Wikiled.News.Monitoring.Retriever
 
         private readonly ILogger<SimpleDataRetriever> logger;
 
-        private readonly IConcurentManager manager;
+        private readonly IIPHandler manager;
 
         private Stream readStream;
 
         private HttpWebResponse responseReading;
 
-        public SimpleDataRetriever(ILogger<SimpleDataRetriever> logger, IConcurentManager manager, Uri uri)
+        public SimpleDataRetriever(ILogger<SimpleDataRetriever> logger, IIPHandler manager, Uri uri)
         {
             Timeout = 2 * 60 * 1000;
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -96,7 +96,7 @@ namespace Wikiled.News.Monitoring.Retriever
                 {
                     await PrepareCall(HttpProtocol.POST).ConfigureAwait(false);
                 }
-            
+
                 var encoding = new ASCIIEncoding();
                 var data = encoding.GetBytes(postData);
                 using (var newStream = httpStateRequest.HttpRequest.GetRequestStream())
@@ -104,7 +104,7 @@ namespace Wikiled.News.Monitoring.Retriever
                     // Send the data.
                     newStream.Write(data, 0, data.Length);
                     responseReading = (HttpWebResponse)httpStateRequest.HttpRequest.GetResponse();
-                    await StartReading(token).ConfigureAwait(false);
+                    await StartReading().ConfigureAwait(false);
                     newStream.Close();
                 }
             }
@@ -112,7 +112,27 @@ namespace Wikiled.News.Monitoring.Retriever
             {
                 if (Ip != null)
                 {
-                    await manager.FinishedDownloading(DocumentUri, Ip).ConfigureAwait(false);
+                    manager.Release(Ip);
+                }
+
+                throw;
+            }
+        }
+
+        public async Task ReceiveData(CancellationToken token, Stream stream = null)
+        {
+            try
+            {
+                readStream = stream;
+                await PrepareCall().ConfigureAwait(false);
+                responseReading = (HttpWebResponse)await httpStateRequest.HttpRequest.GetResponseAsync().ConfigureAwait(false);
+                await StartReading().ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                if (Ip != null)
+                {
+                    manager.Release(Ip);
                 }
 
                 throw;
@@ -124,7 +144,7 @@ namespace Wikiled.News.Monitoring.Retriever
             logger.LogDebug("Download: {0}", DocumentUri);
             CreateRequest(protocol);
             Modifier?.Invoke(httpStateRequest.HttpRequest);
-            Ip = await manager.StartDownloading(DocumentUri).ConfigureAwait(false);
+            Ip = await manager.GetAvailable().ConfigureAwait(false);
             httpStateRequest.HttpRequest.ServicePoint.BindIPEndPointDelegate =
                 (servicePoint, endPoint, target) =>
                 {
@@ -133,31 +153,10 @@ namespace Wikiled.News.Monitoring.Retriever
                 };
         }
 
-        public async Task ReceiveData(CancellationToken token, Stream stream = null)
-        {
-            try
-            {
-                readStream = stream;
-                await PrepareCall().ConfigureAwait(false);
-                responseReading = (HttpWebResponse)await httpStateRequest.HttpRequest.GetResponseAsync().ConfigureAwait(false);
-                await StartReading(token).ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-                if (Ip != null)
-                {
-                    await manager.FinishedDownloading(DocumentUri, Ip).ConfigureAwait(false);
-                }
-
-                throw;
-            }
-        }
-
-        private static bool ValidateRemoteCertificate(
-            object sender,
-            X509Certificate certificate,
-            X509Chain chain,
-            SslPolicyErrors policyErrors)
+        private static bool ValidateRemoteCertificate(object sender,
+                                                      X509Certificate certificate,
+                                                      X509Chain chain,
+                                                      SslPolicyErrors policyErrors)
         {
             return true;
         }
@@ -182,15 +181,16 @@ namespace Wikiled.News.Monitoring.Retriever
             httpStateRequest.HttpRequest.CookieContainer = httpStateRequest.CookieContainer;
         }
 
-        private async Task ReadData(CancellationToken token)
+        private async Task ReadData()
         {
             var webResponse = httpStateRequest.HttpResponse;
             ResponseUri = webResponse.ResponseUri;
             if (!AllowGlobalRedirection &&
-                (string.Compare(
-                     DocumentUri.Host,
-                     httpStateRequest.ResponseHost,
-                     StringComparison.OrdinalIgnoreCase) != 0))
+                string.Compare(
+                    DocumentUri.Host,
+                    httpStateRequest.ResponseHost,
+                    StringComparison.OrdinalIgnoreCase) !=
+                0)
             {
                 logger.LogWarning("URI from another host is not supported", httpStateRequest.ResponseHost);
                 return;
@@ -213,7 +213,7 @@ namespace Wikiled.News.Monitoring.Retriever
 
             if (readStream != null)
             {
-                await webResponse.GetResponseStream().CopyToAsync(readStream, 81920, token).ConfigureAwait(false);
+                await webResponse.GetResponseStream().CopyToAsync(readStream).ConfigureAwait(false);
             }
 
             using (var stream = new StreamReader(webResponse.GetResponseStream(), Encoding.GetEncoding(encoding)))
@@ -222,7 +222,7 @@ namespace Wikiled.News.Monitoring.Retriever
             }
         }
 
-        private async Task ReadResponse(CancellationToken token)
+        private async Task ReadResponse()
         {
             if (httpStateRequest.HttpResponse == null)
             {
@@ -230,10 +230,11 @@ namespace Wikiled.News.Monitoring.Retriever
             }
 
             if (!AllowGlobalRedirection &&
-                (string.Compare(
-                     httpStateRequest.ResponseHost,
-                     httpStateRequest.RequestHost,
-                     StringComparison.OrdinalIgnoreCase) != 0))
+                string.Compare(
+                    httpStateRequest.ResponseHost,
+                    httpStateRequest.RequestHost,
+                    StringComparison.OrdinalIgnoreCase) !=
+                0)
             {
                 logger.LogWarning(
                     "{0} redirected to another host {1} and that is not supported",
@@ -243,12 +244,12 @@ namespace Wikiled.News.Monitoring.Retriever
                 return;
             }
 
-            await ReadData(token).ConfigureAwait(false);
+            await ReadData().ConfigureAwait(false);
             httpStateRequest.HttpResponse.Close();
             Success = true;
         }
 
-        private async Task StartReading(CancellationToken token)
+        private async Task StartReading()
         {
             try
             {
@@ -256,7 +257,7 @@ namespace Wikiled.News.Monitoring.Retriever
                 // End of the Asynchronous request.
                 httpStateRequest.HttpResponse = responseReading;
                 httpStateRequest.HttpResponse.Cookies = AllCookies;
-                await ReadResponse(token);
+                await ReadResponse();
             }
             catch (Exception ex)
             {
@@ -265,7 +266,7 @@ namespace Wikiled.News.Monitoring.Retriever
             finally
             {
                 logger.LogDebug("Page processing completed: {0} on {1}", httpStateRequest.HttpRequest.RequestUri, Ip);
-                await manager.FinishedDownloading(DocumentUri, Ip).ConfigureAwait(false);
+                manager.Release(Ip);
                 httpStateRequest.HttpResponse?.Close();
                 ServicePointManager.ServerCertificateValidationCallback -= ValidateRemoteCertificate;
             }

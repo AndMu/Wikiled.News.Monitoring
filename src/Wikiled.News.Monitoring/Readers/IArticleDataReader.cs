@@ -7,5 +7,7 @@ namespace Wikiled.News.Monitoring.Readers
     public interface IArticleDataReader
     {
         Task<Article> Read(ArticleDefinition definition, CancellationToken token);
+
+        Task<CommentData[]> ReadComments(ArticleDefinition definition, CancellationToken token);
     }
 }

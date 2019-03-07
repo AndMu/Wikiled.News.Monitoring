@@ -12,11 +12,16 @@ namespace Wikiled.News.Monitoring.Data
             Comments = comments ?? throw new ArgumentNullException(nameof(comments));
         }
 
+        public void RefreshComments(CommentData[] comments)
+        {
+            Comments = comments;
+        }
+
         public DateTime DateTime { get; }
 
         public ArticleDefinition Definition { get; }
 
-        public CommentData[] Comments { get; }
+        public CommentData[] Comments { get; private set; }
 
         public ArticleText ArticleText { get; }
     }

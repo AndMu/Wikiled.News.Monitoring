@@ -24,61 +24,78 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         private readonly ConcurrentDictionary<string, Article> scanned = new ConcurrentDictionary<string, Article>();
 
+        private readonly ConcurrentDictionary<string, bool> scannedLookup = new ConcurrentDictionary<string, bool>();
+
         private readonly IArticleDataReader reader;
 
-        public ArticlesMonitor(ILogger<ArticlesMonitor> logger, IScheduler scheduler, IFeedsHandler handler, IArticleDataReader reader)
+        private readonly IDefinitionTransformer transformer;
+
+        private const int keepDays = 5;
+
+        public ArticlesMonitor(ILogger<ArticlesMonitor> logger, IScheduler scheduler, IFeedsHandler handler, IArticleDataReader reader, IDefinitionTransformer transformer)
         {
-            this.logger = logger;
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
             this.handler = handler ?? throw new ArgumentNullException(nameof(handler));
             this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
+            this.transformer = transformer ?? throw new ArgumentNullException(nameof(transformer));
         }
 
-        public IObservable<Article> Start(CancellationToken token)
+        public IObservable<Article> Start()
         {
             logger.LogDebug("Start");
             var scanFeed = handler.GetArticles().RepeatAfterDelay(TimeSpan.FromHours(1), scheduler)
                                   .Where(item => !scanned.ContainsKey(item.Id))
-                                  .Select(item => ArticleReceived(item, token))
+                                  .Select(ArticleReceived)
                                   .Merge()
                                   .Where(item => item != null);
 
             return scanFeed;
         }
 
-        public IObservable<Article> Monitor(CancellationToken token)
+        public IObservable<Article> Monitor()
         {
+            logger.LogDebug("Monitor");
             return Observable.Interval(TimeSpan.FromHours(4), scheduler)
-                             .Select(item => Updated(token).ToObservable(scheduler))
+                             .Select(item => Updated().ToObservable(scheduler))
                              .Merge()
                              .Merge();
         }
 
-        private IEnumerable<Task<Article>> Updated(CancellationToken token)
+        private IEnumerable<Task<Article>> Updated()
         {
             var now = DateTime.UtcNow;
-            var old = scanned.Where(item => now.Subtract(item.Value.DateTime).Days >= 2).ToArray();
+            var old = scanned.Where(item => now.Subtract(item.Value.DateTime).Days >= keepDays).ToArray();
             foreach (var pair in old)
             {
                 scanned.TryRemove(pair.Key, out _);
             }
 
-            return scanned.Where(item => now.Subtract(item.Value.DateTime).Hours >= 2).Select(item => reader.Read(item.Value.Definition, token));
+            return scanned.Select(item => Refresh(item.Value));
         }
 
-        private async Task<Article> ArticleReceived(ArticleDefinition article, CancellationToken token)
+        private async Task<Article> Refresh(Article article)
         {
-            logger.LogDebug("ArticleReceived: {0}({1})", article.Topic, article.Id);
-            if (scanned.TryGetValue(article.ToString(), out var _))
+            var comments = await reader.ReadComments(article.Definition, CancellationToken.None);
+            article.RefreshComments(comments);
+            return article;
+        }
+
+        private async Task<Article> ArticleReceived(ArticleDefinition article)
+        {
+            var transformed = transformer.Transform(article);
+            logger.LogDebug("ArticleReceived: {0}({1})", transformed.Title, transformed.Id);
+            if (scannedLookup.TryGetValue(transformed.Id, out _))
             {
-                logger.LogDebug("Article already processed: {0}", article.Id);
+                logger.LogDebug("Article already processed: {0}", transformed.Id);
                 return null;
             }
 
+            scannedLookup[transformed.Id] = true;
             try
             {
-                var result = await reader.Read(article, token).ConfigureAwait(false);
-                scanned[article.ToString()] = result;
+                var result = await reader.Read(transformed, CancellationToken.None).ConfigureAwait(false);
+                scanned[transformed.Id] = result;
                 return result;
             }
             catch (Exception e)
