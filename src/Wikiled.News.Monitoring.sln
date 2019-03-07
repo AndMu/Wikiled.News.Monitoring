@@ -14,8 +14,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring.Tes
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{447123EB-BA32-4ED7-867A-0A72133FEEFB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring.TestApp", "Wikiled.News.Monitoring.TestApp\Wikiled.News.Monitoring.TestApp.csproj", "{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,10 +28,6 @@ Global
 		{163D1B00-41FE-47E0-A69D-4B39A285225E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{163D1B00-41FE-47E0-A69D-4B39A285225E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{163D1B00-41FE-47E0-A69D-4B39A285225E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9EA5344-B460-4C80-A34E-F65E2C0ACAD4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
