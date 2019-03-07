@@ -3,11 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2024
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E84DB31C-30E0-4158-A4E1-983E28870C94}"
-	ProjectSection(SolutionItems) = preProject
-		Dockerfile = Dockerfile
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring", "Wikiled.News.Monitoring\Wikiled.News.Monitoring.csproj", "{7926E32F-2EC0-41C1-9867-B695B9B7B72B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Wikiled.News.Monitoring.Tests", "Wikiled.News.Monitoring.Tests\Wikiled.News.Monitoring.Tests.csproj", "{163D1B00-41FE-47E0-A69D-4B39A285225E}"
