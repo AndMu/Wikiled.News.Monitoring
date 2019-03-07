@@ -22,23 +22,23 @@ namespace Wikiled.News.Monitoring.Retriever
 
         public TrackedRetrieval(ILogger<TrackedRetrieval> logger, Func<Uri, IDataRetriever> retrieverFactory, RetrieveConfiguration config)
         {
-            this.retrieverFactory = retrieverFactory;
-            this.logger = logger;
+            if (config == null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
+
+            if (config.LongRetryCodes == null)
+            {
+                throw new ArgumentNullException(nameof(config.LongRetryCodes));
+            }
+
+            this.retrieverFactory = retrieverFactory ?? throw new ArgumentNullException(nameof(retrieverFactory));
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             var httpStatusCodesWorthRetrying = config.LongRetryCodes.Concat(config.RetryCodes).ToArray();
             policy = Policy
                      .Handle<WebException>(r => httpStatusCodesWorthRetrying.Contains(((HttpWebResponse)r.Response).StatusCode))
                      .WaitAndRetryAsync(5,
-                         (retries, ex, ctx) =>
-                         {
-                             if (config.LongRetryCodes.Contains(((HttpWebResponse)((WebException)ex).Response).StatusCode))
-                             {
-                                 var wait = TimeSpan.FromSeconds(config.LongRetryDelay);
-                                 logger.LogError("Forbidden detected. Waiting {0}", wait);
-                                 return wait;
-                             }
-
-                             return TimeSpan.FromSeconds(retries);
-                         },
+                         (retries, ex, ctx) => ExecutionRoutine(logger, config, ex, retries),
                          (ts, i, ctx, task) => Task.CompletedTask);
         }
 
@@ -75,6 +75,18 @@ namespace Wikiled.News.Monitoring.Retriever
                 await policy.ExecuteAsync(() => retriever.ReceiveData(token, stream)).ConfigureAwait(false);
                 collection = retriever.AllCookies;
             }
+        }
+
+        private static TimeSpan ExecutionRoutine(ILogger<TrackedRetrieval> logger, RetrieveConfiguration config, Exception ex, int retries)
+        {
+            if (!config.LongRetryCodes.Contains(((HttpWebResponse)((WebException)ex).Response).StatusCode))
+            {
+                return TimeSpan.FromSeconds(retries);
+            }
+
+            var wait = TimeSpan.FromSeconds(config.LongRetryDelay);
+            logger.LogError("Forbidden detected. Waiting {0}", wait);
+            return wait;
         }
     }
 }
