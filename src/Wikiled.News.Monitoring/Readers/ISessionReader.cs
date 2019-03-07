@@ -6,7 +6,7 @@ namespace Wikiled.News.Monitoring.Readers
 {
     public interface ISessionReader
     {
-        Task Init();
+        Task Init(CancellationToken token);
 
         Task<CommentData[]> ReadComments(ArticleDefinition article, CancellationToken token);
 
