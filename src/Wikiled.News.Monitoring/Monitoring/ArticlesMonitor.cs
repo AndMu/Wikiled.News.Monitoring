@@ -32,7 +32,11 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         private const int keepDays = 5;
 
-        public ArticlesMonitor(ILogger<ArticlesMonitor> logger, IScheduler scheduler, IFeedsHandler handler, IArticleDataReader reader, IDefinitionTransformer transformer)
+        public ArticlesMonitor(ILogger<ArticlesMonitor> logger,
+                               IScheduler scheduler,
+                               IFeedsHandler handler,
+                               IArticleDataReader reader,
+                               IDefinitionTransformer transformer)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
