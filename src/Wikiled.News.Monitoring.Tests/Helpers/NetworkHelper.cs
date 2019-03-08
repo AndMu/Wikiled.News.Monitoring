@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using Autofac;
 using Wikiled.News.Monitoring.Containers;
+using Wikiled.News.Monitoring.Readers;
 using Wikiled.News.Monitoring.Retriever;
 
 namespace Wikiled.News.Monitoring.Tests.Helpers
@@ -11,6 +12,8 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
         {
             var builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
+            builder.RegisterType<NullCommentsReader>().As<ICommentsReader>();
+            builder.RegisterType<SimpleArticleTextReader>().As<IArticleTextReader>();
             builder.RegisterModule(
                 new RetrieverModule(new RetrieveConfiguration
                 {
@@ -29,8 +32,11 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
                     MaxConcurrent = 1
                 }));
 
-            Retrieval = builder.Build().Resolve<ITrackedRetrieval>();
+            Container = builder.Build();
+            Retrieval = Container.Resolve<ITrackedRetrieval>();
         }
+
+        public IContainer Container { get; }
 
         public ITrackedRetrieval Retrieval { get; }
     }

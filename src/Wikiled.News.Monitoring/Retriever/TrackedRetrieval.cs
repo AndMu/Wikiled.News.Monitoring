@@ -53,7 +53,7 @@ namespace Wikiled.News.Monitoring.Retriever
                 retriever.Modifier = modify;
                 retriever.AllCookies = new CookieCollection();
                 retriever.AllowGlobalRedirection = true;
-                await policy.ExecuteAsync(() => retriever.PostData(data, token)).ConfigureAwait(false);
+                await policy.ExecuteAsync(t => retriever.PostData(data, t), token).ConfigureAwait(false);
                 collection = retriever.AllCookies;
             }
         }
@@ -65,7 +65,7 @@ namespace Wikiled.News.Monitoring.Retriever
                 retriever.Modifier = modify;
                 retriever.AllowGlobalRedirection = true;
                 retriever.AllCookies = collection;
-                await policy.ExecuteAsync(() => retriever.ReceiveData(token)).ConfigureAwait(false);
+                await policy.ExecuteAsync(t => retriever.ReceiveData(t), token).ConfigureAwait(false);
                 return retriever.Data;
             }
         }
@@ -76,7 +76,7 @@ namespace Wikiled.News.Monitoring.Retriever
             {
                 retriever.AllCookies = collection;
                 retriever.AllowGlobalRedirection = true;
-                await policy.ExecuteAsync(() => retriever.ReceiveData(token, stream)).ConfigureAwait(false);
+                await policy.ExecuteAsync(t => retriever.ReceiveData(t, stream), token).ConfigureAwait(false);
                 collection = retriever.AllCookies;
             }
         }

@@ -21,7 +21,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance
         public async Task Read()
         {
             var source = new CancellationTokenSource(1000);
-            var result = await instance.Retrieval.Read(new Uri( "http://www.bbc.co.uk"), source.Token);
+            var result = await instance.Retrieval.Read(new Uri( "http://www.bbc.co.uk"), source.Token).ConfigureAwait(false);
             Assert.IsNotEmpty(result);
         }
     }
