@@ -24,5 +24,7 @@ namespace Wikiled.News.Monitoring.Data
         public CommentData[] Comments { get; private set; }
 
         public ArticleText ArticleText { get; }
+
+        public object AdditionalData { get; set; }
     }
 }
