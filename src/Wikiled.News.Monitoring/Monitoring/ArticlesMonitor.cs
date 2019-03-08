@@ -51,10 +51,10 @@ namespace Wikiled.News.Monitoring.Monitoring
             this.authentication = authentication ?? throw new ArgumentNullException(nameof(authentication));
         }
 
-        public async Task Initialize()
+        public async Task Initialize(CancellationToken token)
         {
             logger.LogDebug("Initialize");
-            var result = await authentication.Authenticate().ConfigureAwait(false);
+            var result = await authentication.Authenticate(token).ConfigureAwait(false);
             if (!result)
             {
                 logger.LogError("Authentication failed");

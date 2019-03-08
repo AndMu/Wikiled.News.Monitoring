@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace Wikiled.News.Monitoring.Readers
 {
     public interface IAuthentication
     {
-        Task<bool> Authenticate();
+        Task<bool> Authenticate(CancellationToken token);
     }
 }
