@@ -16,7 +16,11 @@ namespace Wikiled.News.Monitoring.Data
 
         public DateTime Date { get; set; }
 
-        public double Vote { get; set; }
+        public double Positive { get; set; }
+
+        public double Negative { get; set; }
+
+        public object AdditionalData { get; set; }
 
         public override string ToString()
         {
