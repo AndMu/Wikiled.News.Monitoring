@@ -11,25 +11,28 @@ namespace Wikiled.News.Monitoring.Readers
     {
         private readonly ILogger<ArticleDataReader> logger;
 
-        private readonly ISessionReader sessionReader;
+        private readonly IArticleTextReader articleTextReader;
 
-        public ArticleDataReader(ILoggerFactory loggerFactory, ISessionReader sessionReader)
+        private readonly ICommentsReader commentsReader;
+
+        public ArticleDataReader(ILoggerFactory loggerFactory, IArticleTextReader articleTextReader, ICommentsReader commentsReader)
         {
-            this.sessionReader = sessionReader ?? throw new ArgumentNullException(nameof(sessionReader));
+            this.articleTextReader = articleTextReader ?? throw new ArgumentNullException(nameof(articleTextReader));
+            this.commentsReader = commentsReader ?? throw new ArgumentNullException(nameof(commentsReader));
             logger = loggerFactory?.CreateLogger<ArticleDataReader>() ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<Article> Read(ArticleDefinition definition, CancellationToken token)
         {
             logger.LogDebug("Reading article: {0}[{1}]", definition.Title, definition.Id);
-            var comments = ReadComments(definition, token);
-            var readArticle = sessionReader.ReadArticle(definition, token);
-            return new Article(definition, await comments.ConfigureAwait(false), await readArticle.ConfigureAwait(false), DateTime.UtcNow);
+            var comments = ReadComments(definition);
+            var readArticle = articleTextReader.ReadArticle(definition, token);
+            return new Article(definition, await comments.ToArray(), await readArticle.ConfigureAwait(false), DateTime.UtcNow);
         }
 
-        public Task<CommentData[]> ReadComments(ArticleDefinition definition, CancellationToken token)
+        public IObservable<CommentData> ReadComments(ArticleDefinition definition)
         {
-            return sessionReader.ReadComments(definition, token);
+            return commentsReader.ReadAllComments();
         }
     }
 }

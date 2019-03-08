@@ -112,7 +112,7 @@ namespace Wikiled.News.Monitoring.Retriever
             {
                 if (Ip != null)
                 {
-                    manager.Release(Ip);
+                    await manager.Release(Ip).ConfigureAwait(false);
                 }
 
                 throw;
@@ -132,7 +132,7 @@ namespace Wikiled.News.Monitoring.Retriever
             {
                 if (Ip != null)
                 {
-                    manager.Release(Ip);
+                    await manager.Release(Ip).ConfigureAwait(false);
                 }
 
                 throw;
@@ -266,7 +266,7 @@ namespace Wikiled.News.Monitoring.Retriever
             finally
             {
                 logger.LogDebug("Page processing completed: {0} on {1}", httpStateRequest.HttpRequest.RequestUri, Ip);
-                manager.Release(Ip);
+                await manager.Release(Ip).ConfigureAwait(false);
                 httpStateRequest.HttpResponse?.Close();
                 ServicePointManager.ServerCertificateValidationCallback -= ValidateRemoteCertificate;
             }

@@ -1,10 +1,7 @@
+using NUnit.Framework;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Moq;
-using NUnit.Framework;
-using Wikiled.News.Monitoring.Retriever;
 using Wikiled.News.Monitoring.Tests.Helpers;
 
 namespace Wikiled.News.Monitoring.Tests.Acceptance

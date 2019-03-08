@@ -7,6 +7,6 @@ namespace Wikiled.News.Monitoring.Retriever
     {
         Task<IPAddress> GetAvailable();
 
-        void Release(IPAddress ipAddress);
+        Task Release(IPAddress ipAddress);
     }
 }

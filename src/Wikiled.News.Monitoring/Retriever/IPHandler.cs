@@ -10,6 +10,10 @@ namespace Wikiled.News.Monitoring.Retriever
 {
     public class IPHandler : IIPHandler
     {
+        private readonly ILogger<IPHandler> logger;
+
+        private readonly RetrieveConfiguration config;
+
         private readonly SemaphoreSlim semaphore;
 
         private readonly ConcurrentQueue<IPAddress> addressed = new ConcurrentQueue<IPAddress>();
@@ -25,6 +29,9 @@ namespace Wikiled.News.Monitoring.Retriever
             {
                 throw new ArgumentException("Max concurrency can not be less than 1", nameof(config.MaxConcurrent));
             }
+
+            this.logger = logger;
+            this.config = config;
 
             var ips = config.Ips?.Length >= 1 ? config.Ips.Select(IPAddress.Parse).ToArray() : new[] { IPAddress.Any };
 
@@ -52,8 +59,14 @@ namespace Wikiled.News.Monitoring.Retriever
             }
         }
 
-        public void Release(IPAddress ipAddress)
+        public async Task Release(IPAddress ipAddress)
         {
+            if (config.CallDelay > 0)
+            {
+                logger.LogDebug("Cooldown after calling...");
+                await Task.Delay(config.CallDelay).ConfigureAwait(false);
+            }
+
             addressed.Enqueue(ipAddress);
             semaphore.Release();
         }
