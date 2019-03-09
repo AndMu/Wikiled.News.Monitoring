@@ -1,8 +1,7 @@
-﻿using System;
-using System.Reactive.Linq;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Wikiled.News.Monitoring.Data;
 
 namespace Wikiled.News.Monitoring.Readers
@@ -11,16 +10,11 @@ namespace Wikiled.News.Monitoring.Readers
     {
         private readonly ILogger<ArticleDataReader> logger;
 
-        private readonly Func<ArticleDefinition, IArticleTextReader> articleTextReader;
+        private readonly IReadingSession session;
 
-        private readonly Func<ArticleDefinition, ICommentsReader> commentsReader;
-
-        public ArticleDataReader(ILoggerFactory loggerFactory,
-                                 Func<ArticleDefinition, IArticleTextReader> articleTextReader,
-                                 Func<ArticleDefinition, ICommentsReader> commentsReader)
+        public ArticleDataReader(ILoggerFactory loggerFactory, IReadingSession session)
         {
-            this.articleTextReader = articleTextReader ?? throw new ArgumentNullException(nameof(articleTextReader));
-            this.commentsReader = commentsReader ?? throw new ArgumentNullException(nameof(commentsReader));
+            this.session = session ?? throw new ArgumentNullException(nameof(session));
             logger = loggerFactory?.CreateLogger<ArticleDataReader>() ??
                 throw new ArgumentNullException(nameof(logger));
         }
@@ -29,13 +23,13 @@ namespace Wikiled.News.Monitoring.Readers
         {
             logger.LogDebug("Reading article: {0}[{1}]", definition.Title, definition.Id);
             var comments = ReadComments(definition);
-            var readArticle = articleTextReader(definition).ReadArticle(definition, token);
-            return new Article(definition, await comments.ToArray(), await readArticle.ConfigureAwait(false), DateTime.UtcNow);
+            var readArticle = session.ReadArticle(definition, token);
+            return new Article(definition, await comments.ConfigureAwait(false), await readArticle.ConfigureAwait(false), DateTime.UtcNow);
         }
 
-        public IObservable<CommentData> ReadComments(ArticleDefinition definition)
+        public Task<CommentData[]> ReadComments(ArticleDefinition definition)
         {
-            return commentsReader(definition).ReadAllComments();
+            return session.ReadComments(definition);
         }
     }
 }

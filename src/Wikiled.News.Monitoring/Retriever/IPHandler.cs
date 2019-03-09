@@ -59,16 +59,11 @@ namespace Wikiled.News.Monitoring.Retriever
             }
         }
 
-        public async Task Release(IPAddress ipAddress)
+        public Task Release(IPAddress ipAddress)
         {
-            if (config.CallDelay > 0)
-            {
-                logger.LogDebug("Cooldown after calling...");
-                await Task.Delay(config.CallDelay).ConfigureAwait(false);
-            }
-
             addressed.Enqueue(ipAddress);
             semaphore.Release();
+            return Task.CompletedTask;
         }
     }
 }

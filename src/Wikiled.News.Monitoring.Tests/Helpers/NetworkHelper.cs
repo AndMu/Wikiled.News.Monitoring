@@ -12,13 +12,13 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
         {
             var builder = new ContainerBuilder();
             builder.RegisterModule<MainModule>();
-            builder.RegisterType<NullCommentsReader>().As<ICommentsReader>();
+            builder.RegisterModule<NullModule>();
             builder.RegisterType<SimpleArticleTextReader>().As<IArticleTextReader>();
             builder.RegisterModule(
                 new RetrieverModule(new RetrieveConfiguration
                 {
                     LongRetryDelay = 1000,
-                    CallDelay = 1000,
+                    CallDelay = 100,
                     LongRetryCodes = new[] { HttpStatusCode.Forbidden },
                     RetryCodes = new[]
                     {

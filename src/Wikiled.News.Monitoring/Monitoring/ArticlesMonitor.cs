@@ -32,52 +32,27 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         private const int keepDays = 5;
 
-        private readonly IAuthentication authentication;
-
-        private bool isInitialized;
-
         public ArticlesMonitor(ILogger<ArticlesMonitor> logger,
                                IScheduler scheduler,
                                IFeedsHandler handler,
                                IArticleDataReader reader,
-                               IDefinitionTransformer transformer,
-                               IAuthentication authentication)
+                               IDefinitionTransformer transformer)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
             this.handler = handler ?? throw new ArgumentNullException(nameof(handler));
             this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
             this.transformer = transformer ?? throw new ArgumentNullException(nameof(transformer));
-            this.authentication = authentication ?? throw new ArgumentNullException(nameof(authentication));
-        }
-
-        public async Task Initialize(CancellationToken token)
-        {
-            logger.LogDebug("Initialize");
-            var result = await authentication.Authenticate(token).ConfigureAwait(false);
-            if (!result)
-            {
-                logger.LogError("Authentication failed");
-                throw new Exception("Authentication failed");
-            }
-
-            isInitialized = true;
         }
 
         public IObservable<Article> Start()
         {
             logger.LogDebug("Start");
-            if (!isInitialized)
-            {
-                throw new Exception("Monitoring is not initialized");
-            }
-
             var scanFeed = handler.GetArticles().RepeatAfterDelay(TimeSpan.FromHours(1), scheduler)
                                   .Where(item => !scanned.ContainsKey(item.Id))
                                   .Select(ArticleReceived)
                                   .Merge()
                                   .Where(item => item != null);
-
             return scanFeed;
         }
 
@@ -104,7 +79,7 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         private async Task<Article> Refresh(Article article)
         {
-            var comments = await reader.ReadComments(article.Definition).ToArray();
+            var comments = await reader.ReadComments(article.Definition).ConfigureAwait(false);
             article.RefreshComments(comments);
             return article;
         }
