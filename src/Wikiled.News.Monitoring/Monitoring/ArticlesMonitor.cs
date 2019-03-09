@@ -32,6 +32,8 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         private const int keepDays = 5;
 
+        private CancellationTokenSource tokenSource = new CancellationTokenSource();
+
         public ArticlesMonitor(ILogger<ArticlesMonitor> logger,
                                IScheduler scheduler,
                                IFeedsHandler handler,
@@ -79,7 +81,7 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         private async Task<Article> Refresh(Article article)
         {
-            var comments = await reader.ReadComments(article.Definition).ConfigureAwait(false);
+            var comments = await reader.ReadComments(article.Definition, tokenSource.Token).ConfigureAwait(false);
             article.RefreshComments(comments);
             return article;
         }
@@ -97,7 +99,7 @@ namespace Wikiled.News.Monitoring.Monitoring
             scannedLookup[transformed.Id] = true;
             try
             {
-                var result = await reader.Read(transformed, CancellationToken.None).ConfigureAwait(false);
+                var result = await reader.Read(transformed, tokenSource.Token).ConfigureAwait(false);
                 scanned[transformed.Id] = result;
                 return result;
             }
@@ -107,6 +109,12 @@ namespace Wikiled.News.Monitoring.Monitoring
             }
 
             return null;
+        }
+
+        public void Dispose()
+        {
+            tokenSource.Cancel();
+            tokenSource?.Dispose();
         }
     }
 }

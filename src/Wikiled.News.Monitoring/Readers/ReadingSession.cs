@@ -56,17 +56,17 @@ namespace Wikiled.News.Monitoring.Readers
             isInitialized = true;
         }
 
-        public Task<CommentData[]> ReadComments(ArticleDefinition article)
+        public Task<CommentData[]> ReadComments(ArticleDefinition article, CancellationToken token)
         {
-            return Caller(async () => await commentReader(reader, article).ReadAllComments().ToArray());
+            return Caller(async () => await commentReader(reader, article).ReadAllComments().ToArray(), token);
         }
 
         public Task<ArticleText> ReadArticle(ArticleDefinition article, CancellationToken token)
         {
-            return Caller(() => textReader(reader).ReadArticle(article, token));
+            return Caller(() => textReader(reader).ReadArticle(article, token), token);
         }
 
-        private async Task<T> Caller<T>(Func<Task<T>> logic)
+        private async Task<T> Caller<T>(Func<Task<T>> logic, CancellationToken token)
         {
             if (!isInitialized)
             {
@@ -75,18 +75,18 @@ namespace Wikiled.News.Monitoring.Readers
 
             try
             {
-                await calls.WaitAsync().ConfigureAwait(false);
+                await calls.WaitAsync(token).ConfigureAwait(false);
                 if (httpConfiguration.CallDelay > 0)
                 {
                     logger.LogDebug("Wait until calling...");
-                    await Task.Delay(httpConfiguration.CallDelay).ConfigureAwait(false);
+                    await Task.Delay(httpConfiguration.CallDelay, token).ConfigureAwait(false);
                 }
 
                 var result = await logic().ConfigureAwait(false);
                 if (httpConfiguration.CallDelay > 0)
                 {
                     logger.LogDebug("Cooldown after calling...");
-                    await Task.Delay(httpConfiguration.CallDelay).ConfigureAwait(false);
+                    await Task.Delay(httpConfiguration.CallDelay, token).ConfigureAwait(false);
                 }
 
                 return result;

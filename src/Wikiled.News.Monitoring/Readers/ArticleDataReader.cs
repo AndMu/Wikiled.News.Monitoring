@@ -22,14 +22,14 @@ namespace Wikiled.News.Monitoring.Readers
         public async Task<Article> Read(ArticleDefinition definition, CancellationToken token)
         {
             logger.LogDebug("Reading article: {0}[{1}]", definition.Title, definition.Id);
-            var comments = ReadComments(definition);
+            var comments = ReadComments(definition, token);
             var readArticle = session.ReadArticle(definition, token);
             return new Article(definition, await comments.ConfigureAwait(false), await readArticle.ConfigureAwait(false), DateTime.UtcNow);
         }
 
-        public Task<CommentData[]> ReadComments(ArticleDefinition definition)
+        public Task<CommentData[]> ReadComments(ArticleDefinition definition, CancellationToken token)
         {
-            return session.ReadComments(definition);
+            return session.ReadComments(definition, token);
         }
     }
 }

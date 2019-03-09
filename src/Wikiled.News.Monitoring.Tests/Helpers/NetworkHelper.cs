@@ -18,7 +18,7 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
                 new RetrieverModule(new RetrieveConfiguration
                 {
                     LongRetryDelay = 1000,
-                    CallDelay = 100,
+                    CallDelay = 50,
                     LongRetryCodes = new[] { HttpStatusCode.Forbidden },
                     RetryCodes = new[]
                     {

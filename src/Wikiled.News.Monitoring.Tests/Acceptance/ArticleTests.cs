@@ -23,7 +23,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance
         [Test]
         public async Task ReadArticle()
         {
-            var tokenSource = new CancellationTokenSource(1000);
+            var tokenSource = new CancellationTokenSource(10000);
             var articleDefinition = new ArticleDefinition
             {
                 Url = new Uri(@"http://www.guardian.co.uk")

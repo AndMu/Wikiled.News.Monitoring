@@ -8,6 +8,6 @@ namespace Wikiled.News.Monitoring.Readers
     {
         Task<Article> Read(ArticleDefinition definition, CancellationToken token);
 
-        Task<CommentData[]> ReadComments(ArticleDefinition definition);
+        Task<CommentData[]> ReadComments(ArticleDefinition definition, CancellationToken token);
     }
 }
