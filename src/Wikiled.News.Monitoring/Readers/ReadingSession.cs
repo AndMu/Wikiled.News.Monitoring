@@ -26,6 +26,8 @@ namespace Wikiled.News.Monitoring.Readers
 
         private readonly SemaphoreSlim calls;
 
+        private readonly SemaphoreSlim initializationLock = new SemaphoreSlim(1, 1);
+
         public ReadingSession(
             ILogger<ReadingSession> logger,
             RetrieveConfiguration httpConfiguration,
@@ -46,33 +48,50 @@ namespace Wikiled.News.Monitoring.Readers
         public async Task Initialize(CancellationToken token)
         {
             logger.LogDebug("Initialize");
-            var result = await authentication(reader).Authenticate(token).ConfigureAwait(false);
-            if (!result)
+
+            if (isInitialized)
             {
-                logger.LogError("Authentication failed");
-                throw new Exception("Authentication failed");
+                logger.LogDebug("Already initialized");
+                return;
             }
 
-            isInitialized = true;
+            try
+            {
+                await initializationLock.WaitAsync(token).ConfigureAwait(false);
+                var result = await authentication(reader).Authenticate(token).ConfigureAwait(false);
+                if (!result)
+                {
+                    logger.LogError("Authentication failed");
+                    throw new Exception("Authentication failed");
+                }
+
+                isInitialized = true;
+                logger.LogDebug("Initialized");
+            }
+            finally
+            {
+                initializationLock.Release();
+            }
         }
 
         public Task<CommentData[]> ReadComments(ArticleDefinition article, CancellationToken token)
         {
-            return Caller(async () => await commentReader(reader, article).ReadAllComments().ToArray(), token);
+            return Wrapper(async () => await commentReader(reader, article).ReadAllComments().ToArray(), token);
         }
 
         public Task<ArticleText> ReadArticle(ArticleDefinition article, CancellationToken token)
         {
-            return Caller(() => textReader(reader).ReadArticle(article, token), token);
+            return Wrapper(() => textReader(reader).ReadArticle(article, token), token);
         }
 
-        private async Task<T> Caller<T>(Func<Task<T>> logic, CancellationToken token)
+        private async Task<T> Wrapper<T>(Func<Task<T>> logic, CancellationToken token)
         {
             if (!isInitialized)
             {
-                throw new InvalidOperationException();
+                await Initialize(token).ConfigureAwait(false);
             }
 
+            logger.LogDebug("Wrapper Call");
             try
             {
                 await calls.WaitAsync(token).ConfigureAwait(false);

@@ -9,7 +9,6 @@ namespace Wikiled.News.Monitoring.Readers
     {
         public NullCommentsReader(ITrackedRetrieval retrieval, ArticleDefinition definition)
         {
-
         }
 
         public IObservable<CommentData> ReadAllComments()
