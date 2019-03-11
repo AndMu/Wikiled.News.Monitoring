@@ -6,6 +6,6 @@ namespace Wikiled.News.Monitoring.Readers
 {
     public interface IArticleTextReader
     {
-        Task<ArticleText> ReadArticle(ArticleDefinition definition, CancellationToken token);
+        Task<ArticleContent> ReadArticle(ArticleDefinition definition, CancellationToken token);
     }
 }

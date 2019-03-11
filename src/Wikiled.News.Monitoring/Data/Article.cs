@@ -4,10 +4,10 @@ namespace Wikiled.News.Monitoring.Data
 {
     public class Article
     {
-        public Article(ArticleDefinition definition, CommentData[] comments, ArticleText articleText, DateTime dateTime)
+        public Article(ArticleDefinition definition, CommentData[] comments, ArticleContent articleContent, DateTime dateTime)
         {
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
-            ArticleText = articleText ?? throw new ArgumentNullException(nameof(articleText));
+            Content = articleContent ?? throw new ArgumentNullException(nameof(articleContent));
             DateTime = dateTime;
             Comments = comments ?? throw new ArgumentNullException(nameof(comments));
         }
@@ -23,8 +23,8 @@ namespace Wikiled.News.Monitoring.Data
 
         public CommentData[] Comments { get; private set; }
 
-        public ArticleText ArticleText { get; }
+        public ArticleContent Content { get; }
 
-        public object AdditionalData { get; set; }
+        public object Additional { get; set; }
     }
 }

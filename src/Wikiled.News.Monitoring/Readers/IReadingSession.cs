@@ -10,6 +10,6 @@ namespace Wikiled.News.Monitoring.Readers
 
         Task<CommentData[]> ReadComments(ArticleDefinition article, CancellationToken token);
 
-        Task<ArticleText> ReadArticle(ArticleDefinition article, CancellationToken token);
+        Task<ArticleContent> ReadArticle(ArticleDefinition article, CancellationToken token);
     }
 }

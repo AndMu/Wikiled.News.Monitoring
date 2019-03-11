@@ -79,7 +79,7 @@ namespace Wikiled.News.Monitoring.Readers
             return Wrapper(async () => await commentReader(reader, article).ReadAllComments().ToArray(), token);
         }
 
-        public Task<ArticleText> ReadArticle(ArticleDefinition article, CancellationToken token)
+        public Task<ArticleContent> ReadArticle(ArticleDefinition article, CancellationToken token)
         {
             return Wrapper(() => textReader(reader).ReadArticle(article, token), token);
         }

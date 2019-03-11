@@ -30,7 +30,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance
             };
 
             var article = await instance.Container.Resolve<IArticleDataReader>().Read(articleDefinition, tokenSource.Token).ConfigureAwait(false);
-            Assert.Greater(article.ArticleText.Text.Length, 100);
+            Assert.Greater(article.Content.Text.Length, 100);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Wikiled.News.Monitoring.Data
 {
-    public class ArticleText
+    public class ArticleContent
     {
         public string Title { get; set; }
 
