@@ -26,20 +26,20 @@ namespace Wikiled.News.Monitoring.Feeds
                 async observer =>
                 {
                     logger.LogInformation("Getting articles...");
-                    List<(FeedName Feed, Task<Feed> Task)> tasks = new List<(FeedName Feed, Task<Feed> Task)>();
+                    var tasks = new List<(FeedName Feed, Task<Feed> Task)>();
                     foreach (var feed in feeds)
                     {
                         var task = FeedReader.ReadAsync(feed.Url);
                         tasks.Add((feed, task));
                     }
 
-                    DateTime cutOff = DateTime.Today.AddDays(-10);
+                    var cutOff = DateTime.Today.AddDays(-10);
                     foreach (var task in tasks)
                     {
-                        var result = await task.Task;
+                        var result = await task.Task.ConfigureAwait(false);
                         foreach (var item in result.Items)
                         {
-                            ArticleDefinition article = new ArticleDefinition();
+                            var article = new ArticleDefinition();
                             article.Url = new Uri(item.Link);
                             article.Id = item.Id;
                             article.Date = item.PublishingDate;

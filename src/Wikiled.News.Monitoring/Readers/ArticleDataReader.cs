@@ -12,19 +12,28 @@ namespace Wikiled.News.Monitoring.Readers
 
         private readonly IReadingSession session;
 
-        public ArticleDataReader(ILoggerFactory loggerFactory, IReadingSession session)
+        public ArticleDataReader(ILogger<ArticleDataReader> logger, IReadingSession session)
         {
+            this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.session = session ?? throw new ArgumentNullException(nameof(session));
-            logger = loggerFactory?.CreateLogger<ArticleDataReader>() ??
-                throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<Article> Read(ArticleDefinition definition, CancellationToken token)
         {
             logger.LogDebug("Reading article: {0}[{1}]", definition.Title, definition.Id);
             var comments = ReadComments(definition, token);
-            var readArticle = session.ReadArticle(definition, token);
-            return new Article(definition, await comments.ConfigureAwait(false), await readArticle.ConfigureAwait(false), DateTime.UtcNow);
+            var readArticle = await session.ReadArticle(definition, token).ConfigureAwait(false);
+            if (string.IsNullOrEmpty(definition.Title))
+            {
+                definition.Title = readArticle.Title;
+            }
+
+            if (definition.Date == null)
+            {
+                definition.Date = DateTime.UtcNow;
+            }
+
+            return new Article(definition, await comments.ConfigureAwait(false), readArticle, DateTime.UtcNow);
         }
 
         public Task<CommentData[]> ReadComments(ArticleDefinition definition, CancellationToken token)

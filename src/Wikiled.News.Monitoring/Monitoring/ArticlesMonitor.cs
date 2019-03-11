@@ -86,9 +86,9 @@ namespace Wikiled.News.Monitoring.Monitoring
             return article;
         }
 
-        private async Task<Article> ArticleReceived(ArticleDefinition article)
+        private async Task<Article> ArticleReceived(ArticleDefinition definition)
         {
-            var transformed = transformer.Transform(article);
+            var transformed = transformer.Transform(definition);
             logger.LogDebug("ArticleReceived: {0}({1})", transformed.Title, transformed.Id);
             if (scannedLookup.TryGetValue(transformed.Id, out _))
             {
