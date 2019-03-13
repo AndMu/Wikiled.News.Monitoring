@@ -32,7 +32,7 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         private const int keepDays = 5;
 
-        private CancellationTokenSource tokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
 
         public ArticlesMonitor(ILogger<ArticlesMonitor> logger,
                                IScheduler scheduler,

@@ -91,7 +91,6 @@ namespace Wikiled.News.Monitoring.Readers
                 await Initialize(token).ConfigureAwait(false);
             }
 
-            logger.LogDebug("Wrapper Call");
             try
             {
                 await calls.WaitAsync(token).ConfigureAwait(false);

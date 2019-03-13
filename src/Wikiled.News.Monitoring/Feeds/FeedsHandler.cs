@@ -52,7 +52,7 @@ namespace Wikiled.News.Monitoring.Feeds
                                 continue;
                             }
 
-                            logger.LogDebug("Found definition {0} [{1}]...", article.Title, article.Date);
+                            logger.LogDebug("Found definition {0} [{1}] and id [{2}]...", article.Title, article.Date, article.Id);
                             observer.OnNext(article);
                         }
                     }
