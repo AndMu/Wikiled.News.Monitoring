@@ -11,11 +11,11 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
         public NetworkHelper()
         {
             var builder = new ContainerBuilder();
-            builder.RegisterModule<MainModule>();
-            builder.RegisterModule<NullModule>();
+            builder.RegisterModule<MainNewsModule>();
+            builder.RegisterModule<NullNewsModule>();
             builder.RegisterType<SimpleArticleTextReader>().As<IArticleTextReader>();
             builder.RegisterModule(
-                new RetrieverModule(new RetrieveConfiguration
+                new NewsRetrieverModule(new RetrieveConfiguration
                 {
                     LongRetryDelay = 1000,
                     CallDelay = 50,

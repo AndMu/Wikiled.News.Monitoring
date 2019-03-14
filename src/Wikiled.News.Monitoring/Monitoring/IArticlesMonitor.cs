@@ -5,8 +5,8 @@ namespace Wikiled.News.Monitoring.Monitoring
 {
     public interface IArticlesMonitor : IDisposable
     {
-        IObservable<Article> Start();
+        IObservable<Article> NewArticles();
 
-        IObservable<Article> Monitor();
+        IObservable<Article> MonitorUpdates();
     }
 }

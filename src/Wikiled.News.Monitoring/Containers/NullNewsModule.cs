@@ -3,7 +3,7 @@ using Wikiled.News.Monitoring.Readers;
 
 namespace Wikiled.News.Monitoring.Containers
 {
-    public class NullModule : Module
+    public class NullNewsModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

@@ -47,9 +47,9 @@ namespace Wikiled.News.Monitoring.Monitoring
             this.transformer = transformer ?? throw new ArgumentNullException(nameof(transformer));
         }
 
-        public IObservable<Article> Start()
+        public IObservable<Article> NewArticles()
         {
-            logger.LogDebug("Start");
+            logger.LogDebug("NewArticles");
             var scanFeed = handler.GetArticles().RepeatAfterDelay(TimeSpan.FromHours(1), scheduler)
                                   .Where(item => !scanned.ContainsKey(item.Id))
                                   .Select(ArticleReceived)
@@ -58,9 +58,9 @@ namespace Wikiled.News.Monitoring.Monitoring
             return scanFeed;
         }
 
-        public IObservable<Article> Monitor()
+        public IObservable<Article> MonitorUpdates()
         {
-            logger.LogDebug("Monitor");
+            logger.LogDebug("MonitorUpdates");
             return Observable.Interval(TimeSpan.FromHours(4), scheduler)
                              .Select(item => Updated().ToObservable(scheduler))
                              .Merge()

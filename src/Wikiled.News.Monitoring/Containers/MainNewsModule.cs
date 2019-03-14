@@ -8,7 +8,7 @@ using Wikiled.News.Monitoring.Retriever;
 
 namespace Wikiled.News.Monitoring.Containers
 {
-    public class MainModule : Module
+    public class MainNewsModule : Module
     {
         protected override void Load(ContainerBuilder builder)
         {

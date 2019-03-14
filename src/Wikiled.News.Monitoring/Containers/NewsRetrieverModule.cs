@@ -5,11 +5,11 @@ using Wikiled.News.Monitoring.Retriever;
 
 namespace Wikiled.News.Monitoring.Containers
 {
-    public class RetrieverModule : Module
+    public class NewsRetrieverModule : Module
     {
         private readonly RetrieveConfiguration configuration;
 
-        public RetrieverModule(RetrieveConfiguration configuration)
+        public NewsRetrieverModule(RetrieveConfiguration configuration)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
