@@ -84,7 +84,8 @@ namespace Wikiled.News.Monitoring.Retriever
 
         private TimeSpan ExecutionRoutine(RetrieveConfiguration config, Exception ex, int retries)
         {
-            if (!config.LongRetryCodes.Contains(((HttpWebResponse)((WebException)ex).Response).StatusCode))
+            if (!(ex is WebException webException) ||
+                !config.LongRetryCodes.Contains(((HttpWebResponse)(webException).Response).StatusCode))
             {
                 var waitTime = TimeSpan.FromSeconds(retries);
                 logger.LogError("Error detected. Waiting {0}", waitTime);
