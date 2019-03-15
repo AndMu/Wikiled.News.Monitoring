@@ -36,11 +36,7 @@ namespace Wikiled.News.Monitoring.Retriever
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             var httpStatusCodesWorthRetrying = config.LongRetryCodes.Concat(config.RetryCodes).ToArray();
             policy = Policy
-                     .Handle<WebException>(exception =>
-                     {
-                         var response = (HttpWebResponse)exception.Response;
-                         return response != null && httpStatusCodesWorthRetrying.Contains(response.StatusCode);
-                     })
+                     .Handle<WebException>(exception => !(exception.Response is HttpWebResponse response) || httpStatusCodesWorthRetrying.Contains(response.StatusCode))
                      .Or<IOException>()
                      .WaitAndRetryAsync(5,
                          (retries, ex, ctx) => ExecutionRoutine(config, ex, retries),
@@ -84,16 +80,26 @@ namespace Wikiled.News.Monitoring.Retriever
 
         private TimeSpan ExecutionRoutine(RetrieveConfiguration config, Exception ex, int retries)
         {
-            if (!(ex is WebException webException) ||
-                !config.LongRetryCodes.Contains(((HttpWebResponse)(webException).Response).StatusCode))
+            var webException = ex as WebException;
+            if (webException == null)
             {
                 var waitTime = TimeSpan.FromSeconds(retries);
-                logger.LogError("Error detected. Waiting {0}", waitTime);
+                logger.LogError(ex, "Error detected. Waiting {0}", waitTime);
+                return waitTime;
+            }
+
+            var response = webException.Response as HttpWebResponse;
+            var errorCode = response?.StatusCode;
+            if (errorCode == null ||
+                !config.LongRetryCodes.Contains(errorCode.Value))
+            {
+                var waitTime = TimeSpan.FromSeconds(retries);
+                logger.LogError(ex, "Web Error detected. Waiting {0}", waitTime);
                 return waitTime;
             }
 
             var wait = TimeSpan.FromSeconds(config.LongRetryDelay);
-            logger.LogError("Forbidden detected. Waiting {0}", wait);
+            logger.LogError(ex, "Forbidden detected. Waiting {0}", wait);
             return wait;
         }
     }
