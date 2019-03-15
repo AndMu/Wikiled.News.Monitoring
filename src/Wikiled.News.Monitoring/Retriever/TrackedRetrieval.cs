@@ -41,8 +41,9 @@ namespace Wikiled.News.Monitoring.Retriever
                          var response = (HttpWebResponse)exception.Response;
                          return response != null && httpStatusCodesWorthRetrying.Contains(response.StatusCode);
                      })
+                     .Or<IOException>()
                      .WaitAndRetryAsync(5,
-                         (retries, ex, ctx) => ExecutionRoutine(logger, config, ex, retries),
+                         (retries, ex, ctx) => ExecutionRoutine(config, ex, retries),
                          (ts, i, ctx, task) => Task.CompletedTask);
         }
 
@@ -81,11 +82,13 @@ namespace Wikiled.News.Monitoring.Retriever
             }
         }
 
-        private static TimeSpan ExecutionRoutine(ILogger<TrackedRetrieval> logger, RetrieveConfiguration config, Exception ex, int retries)
+        private TimeSpan ExecutionRoutine(RetrieveConfiguration config, Exception ex, int retries)
         {
             if (!config.LongRetryCodes.Contains(((HttpWebResponse)((WebException)ex).Response).StatusCode))
             {
-                return TimeSpan.FromSeconds(retries);
+                var waitTime = TimeSpan.FromSeconds(retries);
+                logger.LogError("Error detected. Waiting {0}", waitTime);
+                return waitTime;
             }
 
             var wait = TimeSpan.FromSeconds(config.LongRetryDelay);

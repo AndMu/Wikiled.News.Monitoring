@@ -257,15 +257,16 @@ namespace Wikiled.News.Monitoring.Retriever
                 // End of the Asynchronous request.
                 httpStateRequest.HttpResponse = responseReading;
                 httpStateRequest.HttpResponse.Cookies = AllCookies;
-                await ReadResponse();
+                await ReadResponse().ConfigureAwait(false);
+                logger.LogDebug("Page processing completed: {0} on {1}", httpStateRequest.HttpRequest.RequestUri, Ip);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Page processing failed: {0} on {1}", httpStateRequest.HttpRequest.RequestUri, Ip);
+                throw;
             }
             finally
             {
-                logger.LogDebug("Page processing completed: {0} on {1}", httpStateRequest.HttpRequest.RequestUri, Ip);
                 await manager.Release(Ip).ConfigureAwait(false);
                 httpStateRequest.HttpResponse?.Close();
                 ServicePointManager.ServerCertificateValidationCallback -= ValidateRemoteCertificate;
