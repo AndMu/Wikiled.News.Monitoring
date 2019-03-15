@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Feeds;
 using Wikiled.News.Monitoring.Monitoring;
 using Wikiled.News.Monitoring.Persistency;
@@ -12,7 +11,6 @@ namespace Wikiled.News.Monitoring.Containers
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterModule(new LoggingModule());
             builder.RegisterType<TrackedRetrieval>().As<ITrackedRetrieval>();
             builder.RegisterType<ReadingSession>().As<IReadingSession>();
             builder.RegisterType<ArticleDataReader>().As<IArticleDataReader>();
