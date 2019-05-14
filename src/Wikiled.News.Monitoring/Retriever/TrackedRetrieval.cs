@@ -1,26 +1,27 @@
-﻿using Microsoft.Extensions.Logging;
-using Polly;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Polly;
 using Polly.Retry;
 
 namespace Wikiled.News.Monitoring.Retriever
 {
     public class TrackedRetrieval : ITrackedRetrieval
     {
-        private CookieCollection collection;
-
         private readonly ILogger<TrackedRetrieval> logger;
-
-        private readonly Func<Uri, IDataRetriever> retrieverFactory;
 
         private readonly AsyncRetryPolicy policy;
 
-        public TrackedRetrieval(ILogger<TrackedRetrieval> logger, Func<Uri, IDataRetriever> retrieverFactory, RetrieveConfiguration config)
+        private readonly Func<Uri, IDataRetriever> retrieverFactory;
+        private CookieCollection collection;
+
+        public TrackedRetrieval(ILogger<TrackedRetrieval> logger,
+                                Func<Uri, IDataRetriever> retrieverFactory,
+                                RetrieveConfiguration config)
         {
             if (config == null)
             {
@@ -36,45 +37,47 @@ namespace Wikiled.News.Monitoring.Retriever
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             var httpStatusCodesWorthRetrying = config.LongRetryCodes.Concat(config.RetryCodes).ToArray();
             policy = Policy
-                     .Handle<WebException>(exception => !(exception.Response is HttpWebResponse response) || httpStatusCodesWorthRetrying.Contains(response.StatusCode))
-                     .Or<IOException>()
-                     .WaitAndRetryAsync(5,
-                         (retries, ex, ctx) => ExecutionRoutine(config, ex, retries),
-                         (ts, i, ctx, task) => Task.CompletedTask);
+                .Handle<WebException>(exception => !(exception.Response is HttpWebResponse response) ||
+                                          httpStatusCodesWorthRetrying.Contains(response.StatusCode))
+                .Or<IOException>()
+                .WaitAndRetryAsync(5,
+                                   (retries, ex, ctx) => ExecutionRoutine(config, ex, retries),
+                                   (ts, i, ctx, task) => Task.CompletedTask);
         }
 
-        public async Task Authenticate(Uri uri, string data, CancellationToken token, Action<HttpWebRequest> modify = null)
+        public void ResetCookies()
         {
-            using (var retriever = retrieverFactory(uri))
-            {
-                retriever.Modifier = modify;
-                retriever.AllCookies = new CookieCollection();
-                retriever.AllowGlobalRedirection = true;
-                await policy.ExecuteAsync(t => retriever.PostData(data, t), token).ConfigureAwait(false);
-                collection = retriever.AllCookies;
-            }
+            collection = new CookieCollection();
         }
 
-        public async Task<string> Read(Uri uri, CancellationToken token, Action<HttpWebRequest> modify = null)
+        public Task Post(Uri uri, string data, CancellationToken token, Action<HttpWebRequest> modify = null)
+        {
+            return ProcessQuery(uri, (retriever, t) => retriever.PostData(data, t), token, modify);
+        }
+
+        public Task<string> Read(Uri uri, CancellationToken token, Action<HttpWebRequest> modify = null)
+        {
+            return ProcessQuery(uri, (retriever, t) => retriever.ReceiveData(t), token, modify);
+        }
+
+        public Task ReadFile(Uri uri, Stream stream, CancellationToken token)
+        {
+            return ProcessQuery(uri, (retriever, t) => retriever.ReceiveData(t, stream), token, null);
+        }
+
+        private async Task<string> ProcessQuery(Uri uri,
+                                                Func<IDataRetriever, CancellationToken, Task> query,
+                                                CancellationToken token,
+                                                Action<HttpWebRequest> modify)
         {
             using (var retriever = retrieverFactory(uri))
             {
                 retriever.Modifier = modify;
                 retriever.AllowGlobalRedirection = true;
                 retriever.AllCookies = collection;
-                await policy.ExecuteAsync(t => retriever.ReceiveData(t), token).ConfigureAwait(false);
+                await policy.ExecuteAsync(t => query(retriever, t), token).ConfigureAwait(false);
+                collection = retriever.AllCookies;
                 return retriever.Data;
-            }
-        }
-
-        public async Task ReadFile(Uri uri, Stream stream, CancellationToken token)
-        {
-            using (var retriever = retrieverFactory(uri))
-            {
-                retriever.AllCookies = collection;
-                retriever.AllowGlobalRedirection = true;
-                await policy.ExecuteAsync(t => retriever.ReceiveData(t, stream), token).ConfigureAwait(false);
-                collection = retriever.AllCookies;
             }
         }
 

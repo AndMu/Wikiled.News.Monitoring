@@ -8,7 +8,9 @@ namespace Wikiled.News.Monitoring.Retriever
 {
     public interface ITrackedRetrieval
     {
-        Task Authenticate(Uri uri, string data, CancellationToken token, Action<HttpWebRequest> modify = null);
+        void ResetCookies();
+
+        Task Post(Uri uri, string data, CancellationToken token, Action<HttpWebRequest> modify = null);
 
         Task<string> Read(Uri uri, CancellationToken token, Action<HttpWebRequest> modify = null);
 
