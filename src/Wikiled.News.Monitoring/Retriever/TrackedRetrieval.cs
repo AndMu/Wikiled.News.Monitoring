@@ -50,7 +50,7 @@ namespace Wikiled.News.Monitoring.Retriever
             collection = new CookieCollection();
         }
 
-        public Task Post(Uri uri, string data, CancellationToken token, Action<HttpWebRequest> modify = null)
+        public Task<string> Post(Uri uri, string data, CancellationToken token, Action<HttpWebRequest> modify = null)
         {
             return ProcessQuery(uri, (retriever, t) => retriever.PostData(data, t), token, modify);
         }
@@ -60,7 +60,7 @@ namespace Wikiled.News.Monitoring.Retriever
             return ProcessQuery(uri, (retriever, t) => retriever.ReceiveData(t), token, modify);
         }
 
-        public Task ReadFile(Uri uri, Stream stream, CancellationToken token)
+        public Task<string> ReadFile(Uri uri, Stream stream, CancellationToken token)
         {
             return ProcessQuery(uri, (retriever, t) => retriever.ReceiveData(t, stream), token, null);
         }

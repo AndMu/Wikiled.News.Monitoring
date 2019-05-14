@@ -10,10 +10,10 @@ namespace Wikiled.News.Monitoring.Retriever
     {
         void ResetCookies();
 
-        Task Post(Uri uri, string data, CancellationToken token, Action<HttpWebRequest> modify = null);
+        Task<string> Post(Uri uri, string data, CancellationToken token, Action<HttpWebRequest> modify = null);
 
         Task<string> Read(Uri uri, CancellationToken token, Action<HttpWebRequest> modify = null);
 
-        Task ReadFile(Uri uri, Stream stream, CancellationToken token);
+        Task<string> ReadFile(Uri uri, Stream stream, CancellationToken token);
     }
 }
