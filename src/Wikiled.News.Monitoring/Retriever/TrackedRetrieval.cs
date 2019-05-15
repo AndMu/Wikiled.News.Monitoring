@@ -43,6 +43,7 @@ namespace Wikiled.News.Monitoring.Retriever
                 .WaitAndRetryAsync(5,
                                    (retries, ex, ctx) => ExecutionRoutine(config, ex, retries),
                                    (ts, i, ctx, task) => Task.CompletedTask);
+            ResetCookies();
         }
 
         public void ResetCookies()
