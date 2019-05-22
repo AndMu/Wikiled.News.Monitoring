@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using Autofac;
+using Wikiled.Common.Net.Resilience;
 using Wikiled.News.Monitoring.Retriever;
 
 namespace Wikiled.News.Monitoring.Containers
@@ -16,7 +17,8 @@ namespace Wikiled.News.Monitoring.Containers
 
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterInstance(configuration);
+            builder.RegisterInstance(configuration).As<IResilienceConfig>().AsSelf();
+            builder.RegisterType<CommonResilience>().As<IResilience>();
             builder.RegisterInstance(IPAddress.Any);
             builder.RegisterType<SimpleDataRetriever>().As<IDataRetriever>();
             builder.RegisterType<IPHandler>().As<IIPHandler>().SingleInstance();

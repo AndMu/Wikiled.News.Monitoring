@@ -16,23 +16,7 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
             builder.RegisterModule<MainNewsModule>();
             builder.RegisterModule<NullNewsModule>();
             builder.RegisterType<SimpleArticleTextReader>().As<IArticleTextReader>();
-            builder.RegisterModule(
-                new NewsRetrieverModule(new RetrieveConfiguration
-                {
-                    LongRetryDelay = 1000,
-                    CallDelay = 50,
-                    LongRetryCodes = new[] { HttpStatusCode.Forbidden },
-                    RetryCodes = new[]
-                    {
-                        HttpStatusCode.Forbidden,
-                        HttpStatusCode.RequestTimeout, // 408
-                        HttpStatusCode.InternalServerError, // 500
-                        HttpStatusCode.BadGateway, // 502
-                        HttpStatusCode.ServiceUnavailable, // 503
-                        HttpStatusCode.GatewayTimeout // 504
-                    },
-                    MaxConcurrent = 1
-                }));
+            builder.RegisterModule(new NewsRetrieverModule(RetrieveConfiguration.GenerateCommon()));
 
             Container = builder.Build();
             Retrieval = Container.Resolve<ITrackedRetrieval>();
