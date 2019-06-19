@@ -20,6 +20,8 @@ namespace Wikiled.News.Monitoring.Readers
 
         private bool isInitialized;
 
+        private bool isDisposed;
+
         private readonly ITrackedRetrieval reader;
 
         private readonly RetrieveConfiguration httpConfiguration;
@@ -48,6 +50,10 @@ namespace Wikiled.News.Monitoring.Readers
         public async Task Initialize(CancellationToken token)
         {
             logger.LogDebug("Initialize");
+            if (isDisposed)
+            {
+                throw new ObjectDisposedException("Can't initialize Already disposed");
+            }
 
             if (isInitialized)
             {
@@ -112,13 +118,21 @@ namespace Wikiled.News.Monitoring.Readers
             catch (Exception ex)
             {
                 logger.LogError(ex, "Final failure");
-                throw;
+                throw ;
             }
             finally
             {
                 isInitialized = false;
                 calls.Release();
             }
+        }
+
+        public void Dispose()
+        {
+            logger.LogDebug("Dispose");
+            isDisposed = true;
+            calls?.Dispose();
+            initializationLock?.Dispose();
         }
     }
 }

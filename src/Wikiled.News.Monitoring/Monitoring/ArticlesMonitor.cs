@@ -51,7 +51,7 @@ namespace Wikiled.News.Monitoring.Monitoring
         {
             logger.LogDebug("NewArticles");
             var scanFeed = handler.GetArticles().RepeatAfterDelay(TimeSpan.FromHours(1), scheduler)
-                                  .Where(item => !scanned.ContainsKey(item.Id))
+                                  .Where(item => !scanned.ContainsKey(item.Id) && !tokenSource.IsCancellationRequested)
                                   .Select(ArticleReceived)
                                   .Merge()
                                   .Where(item => item != null);
@@ -62,9 +62,10 @@ namespace Wikiled.News.Monitoring.Monitoring
         {
             logger.LogDebug("MonitorUpdates");
             return Observable.Interval(TimeSpan.FromHours(4), scheduler)
-                             .Select(item => Updated().ToObservable(scheduler))
-                             .Merge()
-                             .Merge();
+                .Where(item => !tokenSource.IsCancellationRequested)
+                .Select(item => Updated().ToObservable(scheduler))
+                .Merge()
+                .Merge();
         }
 
         private IEnumerable<Task<Article>> Updated()
@@ -113,6 +114,7 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         public void Dispose()
         {
+            logger.LogDebug("Dispose");
             tokenSource.Cancel();
             tokenSource?.Dispose();
         }

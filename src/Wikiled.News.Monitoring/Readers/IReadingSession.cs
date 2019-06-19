@@ -1,10 +1,11 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Wikiled.News.Monitoring.Data;
 
 namespace Wikiled.News.Monitoring.Readers
 {
-    public interface IReadingSession
+    public interface IReadingSession : IDisposable
     {
         Task Initialize(CancellationToken token);
 
