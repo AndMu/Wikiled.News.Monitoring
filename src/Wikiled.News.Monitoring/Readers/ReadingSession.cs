@@ -109,8 +109,14 @@ namespace Wikiled.News.Monitoring.Readers
 
                 return result;
             }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Final failure");
+                throw;
+            }
             finally
             {
+                isInitialized = false;
                 calls.Release();
             }
         }

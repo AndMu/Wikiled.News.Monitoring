@@ -18,10 +18,7 @@ namespace Wikiled.News.Monitoring.Retriever
 
         private readonly IResilience resilience;
 
-        public TrackedRetrieval(ILogger<TrackedRetrieval> logger,
-                                Func<Uri, IDataRetriever> retrieverFactory,
-                                RetrieveConfiguration config,
-                                IResilience resilience)
+        public TrackedRetrieval(ILogger<TrackedRetrieval> logger, Func<Uri, IDataRetriever> retrieverFactory, RetrieveConfiguration config, IResilience resilience)
         {
             if (config == null)
             {
@@ -59,10 +56,7 @@ namespace Wikiled.News.Monitoring.Retriever
             return ProcessQuery(uri, (retriever, t) => retriever.ReceiveData(t, stream), token, null);
         }
 
-        private async Task<string> ProcessQuery(Uri uri,
-                                                Func<IDataRetriever, CancellationToken, Task> query,
-                                                CancellationToken token,
-                                                Action<HttpWebRequest> modify)
+        private async Task<string> ProcessQuery(Uri uri, Func<IDataRetriever, CancellationToken, Task> query, CancellationToken token, Action<HttpWebRequest> modify)
         {
             using (var retriever = retrieverFactory(uri))
             {
