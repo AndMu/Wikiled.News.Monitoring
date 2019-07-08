@@ -71,6 +71,7 @@ namespace Wikiled.News.Monitoring.Monitoring
         private IEnumerable<Task<Article>> Updated()
         {
             var now = DateTime.UtcNow;
+            logger.LogDebug("Monitor updates: pending articles {0} with {1} comments", scanned.Count, scanned.Select(item => item.Value.Comments.Length));
             var old = scanned.Where(item => now.Subtract(item.Value.DateTime).Days >= keepDays).ToArray();
             foreach (var pair in old)
             {
