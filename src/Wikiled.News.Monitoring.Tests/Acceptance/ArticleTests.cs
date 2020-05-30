@@ -1,8 +1,8 @@
-﻿using Autofac;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Readers;
 using Wikiled.News.Monitoring.Tests.Helpers;
@@ -29,7 +29,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance
                 Url = new Uri(@"http://www.guardian.co.uk")
             };
 
-            var article = await instance.Container.Resolve<IArticleDataReader>().Read(articleDefinition, tokenSource.Token).ConfigureAwait(false);
+            var article = await instance.Container.GetRequiredService<IArticleDataReader>().Read(articleDefinition, tokenSource.Token).ConfigureAwait(false);
             Assert.Greater(article.Content.Text.Length, 100);
         }
     }

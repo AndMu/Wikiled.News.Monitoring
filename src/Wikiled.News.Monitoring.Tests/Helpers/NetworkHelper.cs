@@ -1,5 +1,6 @@
-﻿using System.Net;
-using Autofac;
+﻿using System;
+using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Readers;
@@ -11,11 +12,11 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
     {
         public NetworkHelper()
         {
-            var builder = new ContainerBuilder();
+            ServiceCollection builder = new ServiceCollection();
             builder.RegisterModule<LoggingModule>();
             builder.RegisterModule<MainNewsModule>();
             builder.RegisterModule<NullNewsModule>();
-            builder.RegisterType<SimpleArticleTextReader>().As<IArticleTextReader>();
+            builder.AddTransient<IArticleTextReader, SimpleArticleTextReader>();
             builder.RegisterModule(
                 new NewsRetrieverModule(new RetrieveConfiguration
                 {
@@ -34,11 +35,11 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
                     MaxConcurrent = 1
                 }));
 
-            Container = builder.Build();
-            Retrieval = Container.Resolve<ITrackedRetrieval>();
+            Container = builder.BuildServiceProvider();
+            Retrieval = Container.GetRequiredService<ITrackedRetrieval>();
         }
 
-        public IContainer Container { get; }
+        public IServiceProvider Container { get; }
 
         public ITrackedRetrieval Retrieval { get; }
     }

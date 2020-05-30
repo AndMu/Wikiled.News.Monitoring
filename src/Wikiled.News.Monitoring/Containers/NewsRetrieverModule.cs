@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Net;
-using Autofac;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Retriever;
 
 namespace Wikiled.News.Monitoring.Containers
 {
-    public class NewsRetrieverModule : Module
+    public class NewsRetrieverModule : IModule
     {
         private readonly RetrieveConfiguration configuration;
 
@@ -14,12 +16,14 @@ namespace Wikiled.News.Monitoring.Containers
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-        protected override void Load(ContainerBuilder builder)
+        public IServiceCollection ConfigureServices(IServiceCollection services)
         {
-            builder.RegisterInstance(configuration);
-            builder.RegisterInstance(IPAddress.Any);
-            builder.RegisterType<SimpleDataRetriever>().As<IDataRetriever>();
-            builder.RegisterType<IPHandler>().As<IIPHandler>().SingleInstance();
+            services.AddSingleton(configuration);
+            services.AddSingleton(IPAddress.Any);
+            services.AddTransient(
+                ctx => (Func<Uri, IDataRetriever>)(uri => new SimpleDataRetriever(ctx.GetRequiredService<ILogger<SimpleDataRetriever>>(), ctx.GetRequiredService<IIPHandler>(), uri)));
+            services.AddSingleton<IIPHandler, IPHandler>();
+            return services;
         }
     }
 }
