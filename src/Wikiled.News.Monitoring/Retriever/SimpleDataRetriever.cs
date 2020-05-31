@@ -179,6 +179,7 @@ namespace Wikiled.News.Monitoring.Retriever
             httpStateRequest.HttpRequest.KeepAlive = false;
             httpStateRequest.HttpRequest.Timeout = Timeout;
             httpStateRequest.HttpRequest.CookieContainer = httpStateRequest.CookieContainer;
+            httpStateRequest.HttpRequest.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
         }
 
         private async Task ReadData()
