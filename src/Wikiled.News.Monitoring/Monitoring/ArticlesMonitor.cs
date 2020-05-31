@@ -47,9 +47,20 @@ namespace Wikiled.News.Monitoring.Monitoring
             this.transformer = transformer ?? throw new ArgumentNullException(nameof(transformer));
         }
 
-        public IObservable<Article> NewArticles()
+        public IObservable<Article> GetCurrentArticles()
         {
-            logger.LogDebug("NewArticles");
+            logger.LogDebug("GetCurrentArticles");
+            var scanFeed = handler.GetArticles()
+                                  .Where(item => !tokenSource.IsCancellationRequested)
+                                  .Select(ArticleReceived)
+                                  .Merge()
+                                  .Where(item => item != null);
+            return scanFeed;
+        }
+
+        public IObservable<Article> NewArticlesStream()
+        {
+            logger.LogDebug("NewArticlesStream");
             var scanFeed = handler.GetArticles().RepeatAfterDelay(TimeSpan.FromHours(1), scheduler)
                                   .Where(item => !scanned.ContainsKey(item.Id) && !tokenSource.IsCancellationRequested)
                                   .Select(ArticleReceived)
@@ -58,9 +69,9 @@ namespace Wikiled.News.Monitoring.Monitoring
             return scanFeed;
         }
 
-        public IObservable<Article> MonitorUpdates()
+        public IObservable<Article> MonitorUpdatesStream()
         {
-            logger.LogDebug("MonitorUpdates");
+            logger.LogDebug("MonitorUpdatesStream");
             return Observable.Interval(TimeSpan.FromHours(4), scheduler)
                 .Where(item => !tokenSource.IsCancellationRequested)
                 .Select(item => Updated().ToObservable(scheduler))

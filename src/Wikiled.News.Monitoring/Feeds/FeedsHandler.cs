@@ -45,6 +45,7 @@ namespace Wikiled.News.Monitoring.Feeds
                             article.Date = item.PublishingDate;
                             article.Title = item.Title;
                             article.Feed = task.Feed;
+                            article.Topic= task.Feed?.Category;
                             article.Element = item.SpecificItem.Element;
                             if (article.Date < cutOff)
                             {
