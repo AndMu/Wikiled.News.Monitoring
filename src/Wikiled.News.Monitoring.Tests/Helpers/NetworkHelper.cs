@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Containers;
 using Wikiled.News.Monitoring.Readers;
@@ -16,11 +17,13 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
             builder.RegisterModule<LoggingModule>();
             builder.RegisterModule<MainNewsModule>();
             builder.RegisterModule<NullNewsModule>();
-            builder.AddTransient<IArticleTextReader, SimpleArticleTextReader>();
+            builder.AddSingleton(
+                ctx => (Func<ITrackedRetrieval, IArticleTextReader>)(arg => new SimpleArticleTextReader(ctx.GetRequiredService<ILogger<SimpleArticleTextReader>>(), arg)));
             builder.RegisterModule(
                 new NewsRetrieverModule(new RetrieveConfiguration
                 {
-                    LongRetryDelay = 1000,
+                    LongDelay = 1000,
+                    ShortDelay = 100,
                     CallDelay = 50,
                     LongRetryCodes = new[] { HttpStatusCode.Forbidden },
                     RetryCodes = new[]

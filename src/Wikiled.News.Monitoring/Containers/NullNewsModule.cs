@@ -1,6 +1,5 @@
-﻿using System;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Readers;
@@ -16,10 +15,7 @@ namespace Wikiled.News.Monitoring.Containers
             services.AddSingleton(
                 ctx => (Func<ITrackedRetrieval, IAuthentication>)(arg => new NullAuthentication(arg)));
             services.AddSingleton(
-                ctx => (Func<ITrackedRetrieval, IArticleTextReader>)(arg => new SimpleArticleTextReader(ctx.GetRequiredService<ILogger<SimpleArticleTextReader>>(), arg)));
-            services.AddSingleton(
                 ctx => (Func<ITrackedRetrieval, ArticleDefinition, ICommentsReader>)((arg, def) => new NullCommentsReader()));
-            services.AddSingleton<ICommentsReader, NullCommentsReader>();
             return services;
         }
     }

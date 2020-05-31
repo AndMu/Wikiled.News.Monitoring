@@ -12,8 +12,6 @@ namespace Wikiled.News.Monitoring.Retriever
     {
         private readonly ILogger<IPHandler> logger;
 
-        private readonly RetrieveConfiguration config;
-
         private readonly SemaphoreSlim semaphore;
 
         private readonly ConcurrentQueue<IPAddress> addressed = new ConcurrentQueue<IPAddress>();
@@ -31,7 +29,6 @@ namespace Wikiled.News.Monitoring.Retriever
             }
 
             this.logger = logger;
-            this.config = config;
 
             var ips = config.Ips?.Length >= 1 ? config.Ips.Select(IPAddress.Parse).ToArray() : new[] { IPAddress.Any };
 
