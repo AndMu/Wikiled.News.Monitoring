@@ -12,7 +12,7 @@ namespace Wikiled.News.Monitoring.Retriever
 {
     public sealed class SimpleDataRetriever : IDataRetriever
     {
-        private const string defaultEncoding = "utf-8";
+        private Encoding defaultEncoding = Encoding.GetEncoding("utf-8");
 
         private readonly HttpState httpStateRequest = new HttpState();
 
@@ -201,25 +201,33 @@ namespace Wikiled.News.Monitoring.Retriever
                 AllCookies.Add(cookie);
             }
 
-            var encoding = string.Empty;
-            if (!string.IsNullOrEmpty(webResponse.ContentEncoding))
-            {
-                encoding = webResponse.ContentEncoding;
-            }
-            else if (string.IsNullOrEmpty(encoding))
-            {
-                encoding = defaultEncoding; // default
-            }
-
             if (readStream != null)
             {
                 await webResponse.GetResponseStream().CopyToAsync(readStream).ConfigureAwait(false);
             }
 
-            using (var stream = new StreamReader(webResponse.GetResponseStream(), Encoding.GetEncoding(encoding)))
+            using (var stream = new StreamReader(webResponse.GetResponseStream(), GetEncoding(webResponse)))
             {
                 Data = await stream.ReadToEndAsync().ConfigureAwait(false);
             }
+        }
+
+        private Encoding GetEncoding(HttpWebResponse webResponse)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(webResponse.ContentEncoding) &&
+                    !webResponse.ContentEncoding.Contains("gzip"))
+                {
+                    return Encoding.GetEncoding(webResponse.ContentEncoding);
+                }
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Encoding resolution");
+            }
+
+            return defaultEncoding;
         }
 
         private async Task ReadResponse()
