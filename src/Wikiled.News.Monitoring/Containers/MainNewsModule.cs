@@ -18,6 +18,8 @@ namespace Wikiled.News.Monitoring.Containers
             services.AddSingleton<IArticlesMonitor, ArticlesMonitor>();
             services.AddTransient<IFeedsHandler, FeedsHandler>();
             services.AddTransient<IArticlesPersistency, ArticlesPersistency>();
+
+
             return services;
         }
     }

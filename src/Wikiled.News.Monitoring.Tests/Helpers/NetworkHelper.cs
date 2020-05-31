@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Net;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Containers;
-using Wikiled.News.Monitoring.Readers;
 using Wikiled.News.Monitoring.Retriever;
 
 namespace Wikiled.News.Monitoring.Tests.Helpers
@@ -17,10 +15,8 @@ namespace Wikiled.News.Monitoring.Tests.Helpers
             builder.RegisterModule<LoggingModule>();
             builder.RegisterModule<MainNewsModule>();
             builder.RegisterModule<NullNewsModule>();
-            builder.AddSingleton(
-                ctx => (Func<ITrackedRetrieval, IArticleTextReader>)(arg => new SimpleArticleTextReader(ctx.GetRequiredService<ILogger<SimpleArticleTextReader>>(), arg)));
             builder.RegisterModule(
-                new NewsRetrieverModule(new RetrieveConfiguration
+                new NetworkModule(new RetrieveConfiguration
                 {
                     LongDelay = 1000,
                     ShortDelay = 100,

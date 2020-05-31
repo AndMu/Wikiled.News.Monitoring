@@ -4,15 +4,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Wikiled.Common.Net.Resilience;
 using Wikiled.Common.Utilities.Modules;
+using Wikiled.News.Monitoring.Readers;
 using Wikiled.News.Monitoring.Retriever;
 
 namespace Wikiled.News.Monitoring.Containers
 {
-    public class NewsRetrieverModule : IModule
+    public class NetworkModule : IModule
     {
         private readonly RetrieveConfiguration configuration;
 
-        public NewsRetrieverModule(RetrieveConfiguration configuration)
+        public NetworkModule(RetrieveConfiguration configuration)
         {
             this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
