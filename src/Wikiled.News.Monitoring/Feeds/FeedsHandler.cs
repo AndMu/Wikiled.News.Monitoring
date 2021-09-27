@@ -42,7 +42,7 @@ namespace Wikiled.News.Monitoring.Feeds
                         {
                             var article = new ArticleDefinition();
                             article.Url = new Uri(item.Link);
-                            article.Id = item.Id;
+                            article.Id = item.Id ?? item.Title;
                             article.Date = item.PublishingDate;
                             article.Title = item.Title;
                             article.Feed = task.Feed;

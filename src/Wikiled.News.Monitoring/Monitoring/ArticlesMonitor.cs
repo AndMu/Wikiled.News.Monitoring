@@ -94,24 +94,34 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         private async Task<Article> Refresh(Article article)
         {
-            var comments = await reader.ReadComments(article.Definition, tokenSource.Token).ConfigureAwait(false);
-            article.RefreshComments(comments);
-            return article;
+            try
+            {
+                var comments = await reader.ReadComments(article.Definition, tokenSource.Token).ConfigureAwait(false);
+                article.RefreshComments(comments);
+                return article;
+            }
+            catch (Exception e)
+            {
+                logger.LogError(e, "Failed");
+            }
+
+            return null;
         }
 
         private async Task<Article> ArticleReceived(ArticleDefinition definition)
         {
-            var transformed = transformer.Transform(definition);
-            logger.LogDebug("ArticleReceived: {0}({1})", transformed.Title, transformed.Id);
-            if (scannedLookup.TryGetValue(transformed.Id, out _))
-            {
-                logger.LogDebug("Article already processed: {0}", transformed.Id);
-                return null;
-            }
-
-            scannedLookup[transformed.Id] = true;
             try
             {
+                var transformed = transformer.Transform(definition);
+                logger.LogDebug("ArticleReceived: {0}({1})", transformed.Title, transformed.Id);
+                if (scannedLookup.TryGetValue(transformed.Id, out _))
+                {
+                    logger.LogDebug("Article already processed: {0}", transformed.Id);
+                    return null;
+                }
+
+                scannedLookup[transformed.Id] = true;
+
                 var result = await reader.Read(transformed, tokenSource.Token).ConfigureAwait(false);
                 scanned[transformed.Id] = result;
                 return result;
