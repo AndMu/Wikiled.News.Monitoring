@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using CodeHollow.FeedReader;
@@ -29,7 +30,7 @@ namespace Wikiled.News.Monitoring.Feeds
                     var tasks = new List<(FeedName Feed, Task<Feed> Task)>();
                     foreach (var feed in feeds)
                     {
-                        var task = FeedReader.ReadAsync(feed.Url);
+                        var task = GetFeed(new Uri(feed.Url));
                         tasks.Add((feed, task));
                     }
 
@@ -60,6 +61,14 @@ namespace Wikiled.News.Monitoring.Feeds
 
                     observer.OnCompleted();
                 });
+        }
+
+        private async Task<Feed> GetFeed(Uri uri)
+        {
+            using var client = new HttpClient();
+            client.BaseAddress = uri;
+            var feedData = await client.GetStringAsync(string.Empty);
+            return FeedReader.ReadFromString(feedData);
         }
     }
 }
