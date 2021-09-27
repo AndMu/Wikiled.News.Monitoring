@@ -6,11 +6,7 @@ namespace Wikiled.News.Monitoring.Readers
 {
     public class NullAuthentication : IAuthentication
     {
-        public NullAuthentication(ITrackedRetrieval trackedRetrieval)
-        {
-        }
-
-        public Task<bool> Authenticate(CancellationToken token)
+        public Task<bool> Authenticate(ITrackedRetrieval reader, CancellationToken token)
         {
             return Task.FromResult(true);
         }

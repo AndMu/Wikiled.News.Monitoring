@@ -3,6 +3,7 @@ using System;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Retriever;
 
@@ -12,11 +13,7 @@ namespace Wikiled.News.Monitoring.Readers
     {
         private readonly ILogger<ReadingSession> logger;
 
-        private readonly Func<ITrackedRetrieval, IAuthentication> authentication;
-
-        private readonly  Func<ITrackedRetrieval, IArticleTextReader> textReader;
-
-        private readonly Func<ITrackedRetrieval, ArticleDefinition, ICommentsReader> commentReader;
+        private readonly IServiceProvider provider;
 
         private bool isInitialized;
 
@@ -33,17 +30,13 @@ namespace Wikiled.News.Monitoring.Readers
         public ReadingSession(
             ILogger<ReadingSession> logger,
             RetrieveConfiguration httpConfiguration,
-            Func<ITrackedRetrieval, IAuthentication> authentication,
-            Func<ITrackedRetrieval, IArticleTextReader> textReader,
-            Func<ITrackedRetrieval, ArticleDefinition, ICommentsReader> commentReader,
-            ITrackedRetrieval reader)
+            ITrackedRetrieval reader,
+            IServiceProvider provider)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.httpConfiguration = httpConfiguration ?? throw new ArgumentNullException(nameof(httpConfiguration));
-            this.authentication = authentication ?? throw new ArgumentNullException(nameof(authentication));
-            this.textReader = textReader ?? throw new ArgumentNullException(nameof(textReader));
-            this.commentReader = commentReader ?? throw new ArgumentNullException(nameof(commentReader));
             this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
+            this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
             calls = new SemaphoreSlim(httpConfiguration.MaxConcurrent);
         }
 
@@ -64,7 +57,7 @@ namespace Wikiled.News.Monitoring.Readers
             try
             {
                 await initializationLock.WaitAsync(token).ConfigureAwait(false);
-                var result = await authentication(reader).Authenticate(token).ConfigureAwait(false);
+                var result = await provider.GetRequiredService<IAuthentication>().Authenticate(reader, token).ConfigureAwait(false);
                 if (!result)
                 {
                     logger.LogError("Authentication failed");
@@ -82,12 +75,12 @@ namespace Wikiled.News.Monitoring.Readers
 
         public Task<CommentData[]> ReadComments(ArticleDefinition article, CancellationToken token)
         {
-            return Wrapper(async () => await commentReader(reader, article).ReadAllComments().ToArray(), token);
+            return Wrapper(async () => await provider.GetRequiredService<ICommentsReader>().ReadAllComments(reader, article).ToArray(), token);
         }
 
         public Task<ArticleContent> ReadArticle(ArticleDefinition article, CancellationToken token)
         {
-            return Wrapper(() => textReader(reader).ReadArticle(article, token), token);
+            return Wrapper(() => provider.GetRequiredService<IArticleTextReader>().ReadArticle(reader, article, token), token);
         }
 
         private async Task<T> Wrapper<T>(Func<Task<T>> logic, CancellationToken token)
@@ -118,7 +111,7 @@ namespace Wikiled.News.Monitoring.Readers
             catch (Exception ex)
             {
                 logger.LogError(ex, "Final failure");
-                throw ;
+                throw;
             }
             finally
             {

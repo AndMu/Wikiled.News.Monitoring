@@ -12,15 +12,12 @@ namespace Wikiled.News.Monitoring.Readers
     {
         private readonly ILogger<SimpleArticleTextReader> logger;
 
-        private readonly ITrackedRetrieval reader;
-
-        public SimpleArticleTextReader(ILogger<SimpleArticleTextReader> logger, ITrackedRetrieval reader)
+        public SimpleArticleTextReader(ILogger<SimpleArticleTextReader> logger)
         {
-            this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task<ArticleContent> ReadArticle(ArticleDefinition definition, CancellationToken token)
+        public async Task<ArticleContent> ReadArticle(ITrackedRetrieval reader, ArticleDefinition definition, CancellationToken token)
         {
             logger.LogDebug("Reading article text: {0}", definition.Id);
             var page = (await reader.Read(definition.Url, token).ConfigureAwait(false)).GetDocument();
