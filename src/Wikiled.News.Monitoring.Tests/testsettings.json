@@ -1,0 +1,49 @@
+{
+  "Scrapper": {
+    "RssFeeds": {
+      "Feeds": [
+        {
+          "Category": "DE",
+          "Url": "https://www.bundesnetzagentur.de/SiteGlobals/Functions/RSSFeed/DE/RSSNewsfeed/RSSNewsfeed_Pressemitteilungen.xml?nn=265324"
+        }
+      ]
+    },
+    "Parsers": {
+      "Simple": [
+        {
+          "Name": "DE",
+          "TitlePath": "div.layout-primary",
+          "ContentPath": "div#content"
+        }
+      ]
+    }
+  },
+  "Serilog": {
+    "Using": [],
+    "MinimumLevel": {
+      "Default": "Debug",
+      "Override": {
+        "Microsoft": "Warning",
+        "System": "Warning"
+      }
+    },
+    "WriteTo": [
+      {
+        "Name": "RollingFile",
+        "Args": {
+          "pathFormat": "logs/log-{Date}.log",
+          "outputTemplate": "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{ThreadId}] [{Level:u3}] [{SourceContext}] {Message}{NewLine}{Exception}"
+        }
+      },
+      {
+        "Name": "NUnit"
+      }
+    ],
+    "Enrich": [
+      "FromLogContext",
+      "WithMachineName",
+      "WithProcessId",
+      "WithThreadId"
+    ]
+  }
+}

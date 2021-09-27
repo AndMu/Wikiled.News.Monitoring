@@ -8,6 +8,7 @@ namespace Wikiled.News.Monitoring.Containers
     {
         public IServiceCollection ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<IDefinitionTransformer, NulIDefinitionTransformer>();
             services.AddSingleton<IAuthentication, NullAuthentication>();
             services.AddSingleton<ICommentsReader, NullCommentsReader>();
             services.AddSingleton<IArticleTextReader, SimpleArticleTextReader>();
