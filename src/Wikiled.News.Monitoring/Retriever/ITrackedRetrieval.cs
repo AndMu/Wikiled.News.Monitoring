@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -12,7 +13,7 @@ namespace Wikiled.News.Monitoring.Retriever
 
         Task<string> Post(Uri uri, string data, CancellationToken token, Action<HttpWebRequest> modify = null);
 
-        Task<string> Read(Uri uri, CancellationToken token, Action<HttpWebRequest> modify = null);
+        Task<string> Read(Uri uri, CancellationToken token, Action<HttpWebRequest> modify = null, Encoding encoding = null);
 
         Task<string> ReadFile(Uri uri, Stream stream, CancellationToken token);
     }

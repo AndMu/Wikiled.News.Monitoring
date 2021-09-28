@@ -12,8 +12,6 @@ namespace Wikiled.News.Monitoring.Retriever
 {
     public sealed class SimpleDataRetriever : IDataRetriever
     {
-        private readonly Encoding defaultEncoding = Encoding.GetEncoding("utf-8");
-
         private readonly HttpState httpStateRequest = new HttpState();
 
         private readonly ILogger<SimpleDataRetriever> logger;
@@ -33,6 +31,8 @@ namespace Wikiled.News.Monitoring.Retriever
         }
 
         public Action<HttpWebRequest> Modifier { get; set; }
+        
+        public Encoding DefaultEncoding { get; set; }  = Encoding.UTF8;
 
         public CookieCollection AllCookies
         {
@@ -205,10 +205,8 @@ namespace Wikiled.News.Monitoring.Retriever
                 await webResponse.GetResponseStream().CopyToAsync(readStream).ConfigureAwait(false);
             }
 
-            using (var stream = new StreamReader(webResponse.GetResponseStream(), GetEncoding(webResponse)))
-            {
-                Data = await stream.ReadToEndAsync().ConfigureAwait(false);
-            }
+            using var stream = new StreamReader(webResponse.GetResponseStream(), GetEncoding(webResponse));
+            Data = await stream.ReadToEndAsync().ConfigureAwait(false);
         }
 
         private Encoding GetEncoding(HttpWebResponse webResponse)
@@ -226,7 +224,7 @@ namespace Wikiled.News.Monitoring.Retriever
                 logger.LogError(e, "Encoding resolution");
             }
 
-            return defaultEncoding;
+            return DefaultEncoding;
         }
 
         private async Task ReadResponse()
