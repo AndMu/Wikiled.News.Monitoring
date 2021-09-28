@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Wikiled.News.Monitoring.Persistency;
 using Wikiled.News.Monitoring.Readers;
 
 namespace Wikiled.News.Monitoring.Containers
@@ -11,6 +12,7 @@ namespace Wikiled.News.Monitoring.Containers
             services.AddSingleton<IAuthentication, NullAuthentication>();
             services.AddSingleton<ICommentsReader, NullCommentsReader>();
             services.AddSingleton<IArticleTextReader, SimpleArticleTextReader>();
+            services.AddSingleton<IArticlesPersistency, ArticlesPersistency>();
             return services;
         }
     }
