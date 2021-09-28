@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.Logging.Abstractions;
 using NUnit.Framework;
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Wikiled.News.Monitoring.Config;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Extensions;
+using Wikiled.News.Monitoring.Persistency;
 using Wikiled.News.Monitoring.Readers.Parsers;
 
 namespace Wikiled.News.Monitoring.Tests.Acceptance
@@ -33,6 +35,17 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance
             var page = responseString.GetDocument();
             var result = parser.Parse(new ArticleDefinition(), page);
             Assert.IsNotEmpty(result.Text);
+            var persistency =
+                new ArticlesPersistency(
+                    new NullLogger<ArticlesPersistency>(),
+                    new PersistencyConfig
+                    {
+                        Location = Path.Combine(TestContext.CurrentContext.TestDirectory, "Data")
+                    });
+            await persistency.Save(
+                new Article(new ArticleDefinition {Title = "Test", Id = "1"},
+                    Array.Empty<CommentData>(),
+                    result, DateTime.UtcNow));
         }
     }
 }
