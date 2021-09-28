@@ -12,7 +12,7 @@ namespace Wikiled.News.Monitoring.Retriever
 {
     public sealed class SimpleDataRetriever : IDataRetriever
     {
-        private Encoding defaultEncoding = Encoding.GetEncoding("utf-8");
+        private readonly Encoding defaultEncoding = Encoding.GetEncoding("utf-8");
 
         private readonly HttpState httpStateRequest = new HttpState();
 
@@ -99,14 +99,12 @@ namespace Wikiled.News.Monitoring.Retriever
 
                 var encoding = new ASCIIEncoding();
                 var data = encoding.GetBytes(postData);
-                using (var newStream = httpStateRequest.HttpRequest.GetRequestStream())
-                {
-                    // Send the data.
-                    newStream.Write(data, 0, data.Length);
-                    responseReading = (HttpWebResponse)httpStateRequest.HttpRequest.GetResponse();
-                    await StartReading().ConfigureAwait(false);
-                    newStream.Close();
-                }
+                using var newStream = httpStateRequest.HttpRequest.GetRequestStream();
+                // Send the data.
+                await newStream.WriteAsync(data, 0, data.Length, token);
+                responseReading = (HttpWebResponse)httpStateRequest.HttpRequest.GetResponse();
+                await StartReading().ConfigureAwait(false);
+                newStream.Close();
             }
             catch (Exception)
             {

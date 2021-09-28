@@ -31,7 +31,7 @@ namespace Wikiled.News.Monitoring.Persistency
                 logger.LogInformation("Saving: {0}", article.Definition.Title);
                 var output = JsonConvert.SerializeObject(article, Formatting.Indented);
                 var currentPath = Path.Combine(config.Location, article.Definition.Feed.Category);
-                var file = Path.Combine(currentPath, $"{article.Definition.Title.CreateLetterText()}_{article.Definition.Id}.zip");
+                var file = Path.Combine(currentPath, $"{article.Definition.Title.CreateLetterText()}_{DateTime.UtcNow.Ticks}.zip");
                 var data = output.ZipAsTextFile($"{article.Definition.Title.CreateLetterText()}.json");
                 lock (syncRoot)
                 {
@@ -51,7 +51,5 @@ namespace Wikiled.News.Monitoring.Persistency
 
             return Task.FromResult(false);
         }
-
-      
     }
 }

@@ -58,15 +58,13 @@ namespace Wikiled.News.Monitoring.Retriever
 
         private async Task<string> ProcessQuery(Uri uri, Func<IDataRetriever, CancellationToken, Task> query, CancellationToken token, Action<HttpWebRequest> modify)
         {
-            using (var retriever = retrieverFactory(uri))
-            {
-                retriever.Modifier = modify;
-                retriever.AllowGlobalRedirection = true;
-                retriever.AllCookies = collection;
-                await resilience.WebPolicy.ExecuteAsync(t => query(retriever, t), token).ConfigureAwait(false);
-                collection = retriever.AllCookies;
-                return retriever.Data;
-            }
+            using var retriever = retrieverFactory(uri);
+            retriever.Modifier = modify;
+            retriever.AllowGlobalRedirection = true;
+            retriever.AllCookies = collection;
+            await resilience.WebPolicy.ExecuteAsync(t => query(retriever, t), token).ConfigureAwait(false);
+            collection = retriever.AllCookies;
+            return retriever.Data;
         }
     }
 }
