@@ -2,6 +2,7 @@
 using System;
 using Fizzler.Systems.HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
+using Wikiled.News.Monitoring.Config;
 using Wikiled.News.Monitoring.Data;
 
 namespace Wikiled.News.Monitoring.Readers.Parsers

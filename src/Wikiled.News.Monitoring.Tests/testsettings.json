@@ -8,6 +8,10 @@
         }
       ]
     },
+    "Persistency":
+    {
+
+    },
     "Parsers": {
       "Simple": [
         {

@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Wikiled.Common.Extensions;
 using Wikiled.Common.Helpers;
+using Wikiled.News.Monitoring.Config;
 using Wikiled.News.Monitoring.Data;
 
 namespace Wikiled.News.Monitoring.Persistency
@@ -13,14 +14,14 @@ namespace Wikiled.News.Monitoring.Persistency
     {
         private readonly ILogger<ArticlesPersistency> logger;
 
-        private readonly string path;
+        private readonly PersistencyConfig config;
 
         private readonly object syncRoot = new object();
 
-        public ArticlesPersistency(ILogger<ArticlesPersistency> logger, string path)
+        public ArticlesPersistency(ILogger<ArticlesPersistency> logger, PersistencyConfig config)
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            this.path = path;
+            this.config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
         public Task<bool> Save(Article article)
@@ -29,7 +30,7 @@ namespace Wikiled.News.Monitoring.Persistency
             {
                 logger.LogInformation("Saving: {0}", article.Definition.Title);
                 var output = JsonConvert.SerializeObject(article, Formatting.Indented);
-                var currentPath = Path.Combine(path, article.Definition.Feed.Category);
+                var currentPath = Path.Combine(config.Location, article.Definition.Feed.Category);
                 var file = Path.Combine(currentPath, $"{article.Definition.Title.CreateLetterText()}_{article.Definition.Id}.zip");
                 var data = output.ZipAsTextFile($"{article.Definition.Title.CreateLetterText()}.json");
                 lock (syncRoot)

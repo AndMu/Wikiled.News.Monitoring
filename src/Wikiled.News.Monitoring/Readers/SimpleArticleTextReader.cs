@@ -31,7 +31,8 @@ namespace Wikiled.News.Monitoring.Readers
             logger.LogDebug("Reading article text: {0} {1}", definition.Id, definition.Title);
             var page = (await reader.Read(definition.Url, token).ConfigureAwait(false)).GetDocument();
             IPageParser parser = defaultPageParser;
-            if (parsersLookup.Contains(definition.Feed.Category))
+            if (definition.Feed?.Category != null &&
+                parsersLookup.Contains(definition.Feed.Category))
             {
                 parser = parsersLookup[definition.Feed.Category].First();
             }

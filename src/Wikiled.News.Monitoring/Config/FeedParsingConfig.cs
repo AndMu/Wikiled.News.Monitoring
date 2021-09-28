@@ -1,4 +1,4 @@
-﻿namespace Wikiled.News.Monitoring.Readers
+﻿namespace Wikiled.News.Monitoring.Config
 {
     public class FeedParsingConfig
     {

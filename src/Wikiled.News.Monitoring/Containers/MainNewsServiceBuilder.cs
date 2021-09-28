@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Wikiled.Common.Utilities.Modules;
+using Wikiled.News.Monitoring.Config;
 using Wikiled.News.Monitoring.Feeds;
 using Wikiled.News.Monitoring.Monitoring;
 using Wikiled.News.Monitoring.Persistency;
@@ -15,6 +16,7 @@ namespace Wikiled.News.Monitoring.Containers
     {
         public static IServiceCollection AddNewsServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.RegisterModule<CommonModule>();
             services.AddTransient<ITrackedRetrieval, TrackedRetrieval>();
             services.AddTransient<IReadingSession, ReadingSession>();
             services.AddTransient<IArticleDataReader, ArticleDataReader>();
@@ -23,11 +25,16 @@ namespace Wikiled.News.Monitoring.Containers
             services.AddTransient<IArticlesPersistency, ArticlesPersistency>();
             services.AddSingleton<DefaultPageParser>();
 
-            var configData = new ParsingConfig();
-            configuration.GetSection("Scrapper:Parsers").Bind(configData);
-            if (configData.Simple != null)
+            var configData = new ScrapperConfig();
+            configuration.GetSection("Scrapper").Bind(configData);
+            if (configData.Persistency != null)
             {
-                foreach (var feed in configData.Simple)
+                services.AddSingleton(configData.Persistency);
+            }
+
+            if (configData.Parsers.Simple != null)
+            {
+                foreach (var feed in configData.Parsers.Simple)
                 {
                     services.AddSingleton<IPageParser>(ctx => new SimplePageParser(ctx.GetRequiredService<ILogger<SimplePageParser>>(), feed));
                 }

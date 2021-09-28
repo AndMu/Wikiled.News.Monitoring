@@ -33,7 +33,7 @@ namespace Wikiled.News.Monitoring.Tests
 
         public static ServiceCollection Collection { get; private set; }
 
-        public static ServiceProvider SetupServices(string db = "imbalance")
+        public static ServiceProvider SetupServices()
         {
             TestContext.Progress.WriteLine("SetupServices");
             var serilog = new LoggerConfiguration()
@@ -42,7 +42,6 @@ namespace Wikiled.News.Monitoring.Tests
                 .CreateLogger();
 
             Collection = new ServiceCollection();
-            Collection.RegisterModule<CommonModule>();
             Collection.AddNewsServices(Configuration);
             Collection.SetDefaultScrappingServices();
 
