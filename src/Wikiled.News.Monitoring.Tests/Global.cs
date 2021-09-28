@@ -44,7 +44,7 @@ namespace Wikiled.News.Monitoring.Tests
             Collection = new ServiceCollection();
             Collection.RegisterModule<CommonModule>();
             Collection.AddNewsServices(Configuration);
-            Collection.RegisterModule<NullNewsModule>();
+            Collection.SetDefaultScrappingServices();
 
             Collection.RegisterModule(
                 new NetworkModule(

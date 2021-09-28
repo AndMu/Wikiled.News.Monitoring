@@ -1,14 +1,13 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Wikiled.Common.Utilities.Modules;
 using Wikiled.News.Monitoring.Readers;
 
 namespace Wikiled.News.Monitoring.Containers
 {
-    public class NullNewsModule : IModule
+    public static class DefaultScrapperBuilder
     {
-        public IServiceCollection ConfigureServices(IServiceCollection services)
+        public static IServiceCollection SetDefaultScrappingServices(this IServiceCollection services)
         {
-            services.AddSingleton<IDefinitionTransformer, NulIDefinitionTransformer>();
+            services.AddSingleton<IDefinitionTransformer, NullDefinitionTransformer>();
             services.AddSingleton<IAuthentication, NullAuthentication>();
             services.AddSingleton<ICommentsReader, NullCommentsReader>();
             services.AddSingleton<IArticleTextReader, SimpleArticleTextReader>();

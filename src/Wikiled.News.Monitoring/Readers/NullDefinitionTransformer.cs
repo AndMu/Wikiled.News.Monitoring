@@ -2,7 +2,7 @@
 
 namespace Wikiled.News.Monitoring.Readers
 {
-    public class NulIDefinitionTransformer : IDefinitionTransformer
+    public class NullDefinitionTransformer : IDefinitionTransformer
     {
         public ArticleDefinition Transform(ArticleDefinition definition)
         {
