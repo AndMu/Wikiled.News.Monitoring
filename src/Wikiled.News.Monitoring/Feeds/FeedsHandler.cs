@@ -21,7 +21,7 @@ namespace Wikiled.News.Monitoring.Feeds
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IObservable<ArticleDefinition> GetArticles()
+        public IObservable<ArticleDefinition> GetArticles(int cuttoff=10)
         {
             return Observable.Create<ArticleDefinition>(
                 async observer =>
@@ -34,7 +34,7 @@ namespace Wikiled.News.Monitoring.Feeds
                         tasks.Add((feed, task));
                     }
 
-                    var cutOff = DateTime.Today.AddDays(-10);
+                    var cutOff = DateTime.Today.AddDays(-cuttoff);
                     foreach (var task in tasks)
                     {
                         var result = await task.Task.ConfigureAwait(false);

@@ -32,6 +32,11 @@ namespace Wikiled.News.Monitoring.Containers
                 services.AddSingleton(configData.Persistency);
             }
 
+            if (configData.Monitoring != null)
+            {
+                services.AddSingleton(configData.Monitoring);
+            }
+
             if (configData.Parsers.Simple != null)
             {
                 foreach (var feed in configData.Parsers.Simple)

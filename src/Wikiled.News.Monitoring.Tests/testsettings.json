@@ -8,6 +8,10 @@
         }
       ]
     },
+    "Monitoring": {
+      "DaysCutOff": 5,
+      "KeepDays": 5
+    },
     "Persistency":
     {
 
