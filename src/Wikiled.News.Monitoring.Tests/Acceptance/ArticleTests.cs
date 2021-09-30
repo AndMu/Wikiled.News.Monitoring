@@ -5,21 +5,12 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Readers;
-using Wikiled.News.Monitoring.Tests.Helpers;
 
 namespace Wikiled.News.Monitoring.Tests.Acceptance
 {
     [TestFixture]
     public class ArticleTests
     {
-        private NetworkHelper instance;
-
-        [SetUp]
-        public void Setup()
-        {
-            instance = new NetworkHelper();
-        }
-
         [Test]
         public async Task ReadArticle()
         {
@@ -29,7 +20,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance
                 Url = new Uri(@"http://www.guardian.co.uk")
             };
 
-            var article = await instance.Container.GetRequiredService<IArticleDataReader>().Read(articleDefinition, tokenSource.Token).ConfigureAwait(false);
+            var article = await Global.Services.GetRequiredService<IArticleDataReader>().Read(articleDefinition, tokenSource.Token).ConfigureAwait(false);
             Assert.Greater(article.Content.Text.Length, 100);
         }
     }

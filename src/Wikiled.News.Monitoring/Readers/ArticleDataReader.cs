@@ -28,11 +28,7 @@ namespace Wikiled.News.Monitoring.Readers
                 definition.Title = readArticle.Title;
             }
 
-            if (definition.Date == null)
-            {
-                definition.Date = DateTime.UtcNow;
-            }
-
+            definition.Date ??= DateTime.UtcNow;
             return new Article(definition, await comments.ConfigureAwait(false), readArticle, DateTime.UtcNow);
         }
 

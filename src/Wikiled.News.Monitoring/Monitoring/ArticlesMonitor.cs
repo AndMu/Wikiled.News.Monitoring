@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Wikiled.News.Monitoring.Config;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Extensions;
 using Wikiled.News.Monitoring.Feeds;
@@ -30,7 +31,7 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         private readonly IDefinitionTransformer transformer;
 
-        private const int keepDays = 5;
+        private readonly MonitoringConfig config;
 
         private readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
 
@@ -38,19 +39,21 @@ namespace Wikiled.News.Monitoring.Monitoring
                                IScheduler scheduler,
                                IFeedsHandler handler,
                                IArticleDataReader reader,
-                               IDefinitionTransformer transformer)
+                               IDefinitionTransformer transformer, 
+                               MonitoringConfig config) 
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
             this.handler = handler ?? throw new ArgumentNullException(nameof(handler));
             this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
             this.transformer = transformer ?? throw new ArgumentNullException(nameof(transformer));
+            this.config = config ?? throw new ArgumentNullException(nameof(config));
         }
 
         public IObservable<Article> GetCurrentArticles()
         {
             logger.LogDebug("GetCurrentArticles");
-            var scanFeed = handler.GetArticles()
+            var scanFeed = handler.GetArticles(config.DaysCutOff)
                                   .Where(item => !tokenSource.IsCancellationRequested)
                                   .Select(ArticleReceived)
                                   .Merge()
@@ -61,7 +64,7 @@ namespace Wikiled.News.Monitoring.Monitoring
         public IObservable<Article> NewArticlesStream()
         {
             logger.LogDebug("NewArticlesStream");
-            var scanFeed = handler.GetArticles().RepeatAfterDelay(TimeSpan.FromHours(1), scheduler)
+            var scanFeed = handler.GetArticles(config.DaysCutOff).RepeatAfterDelay(TimeSpan.FromHours(1), scheduler)
                                   .Where(item => !scanned.ContainsKey(item.Id) && !tokenSource.IsCancellationRequested)
                                   .Select(ArticleReceived)
                                   .Merge()
@@ -83,7 +86,7 @@ namespace Wikiled.News.Monitoring.Monitoring
         {
             var now = DateTime.UtcNow;
             logger.LogDebug("Monitor updates: pending articles {0} with {1} comments", scanned.Count, scanned.Select(item => item.Value.Comments.Length));
-            var old = scanned.Where(item => now.Subtract(item.Value.DateTime).Days >= keepDays).ToArray();
+            var old = scanned.Where(item => now.Subtract(item.Value.DateTime).Days >= config.KeepDays).ToArray();
             foreach (var pair in old)
             {
                 scanned.TryRemove(pair.Key, out _);

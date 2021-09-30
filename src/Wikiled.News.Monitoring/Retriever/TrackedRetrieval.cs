@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Wikiled.Common.Net.Resilience;
@@ -46,9 +47,9 @@ namespace Wikiled.News.Monitoring.Retriever
             return ProcessQuery(uri, (retriever, t) => retriever.PostData(data, t), token, modify);
         }
 
-        public Task<string> Read(Uri uri, CancellationToken token, Action<HttpWebRequest> modify = null)
+        public Task<string> Read(Uri uri, CancellationToken token, Action<HttpWebRequest> modify = null, Encoding encoding = null)
         {
-            return ProcessQuery(uri, (retriever, t) => retriever.ReceiveData(t), token, modify);
+            return ProcessQuery(uri, (retriever, t) => retriever.ReceiveData(t), token, modify, encoding);
         }
 
         public Task<string> ReadFile(Uri uri, Stream stream, CancellationToken token)
@@ -56,17 +57,16 @@ namespace Wikiled.News.Monitoring.Retriever
             return ProcessQuery(uri, (retriever, t) => retriever.ReceiveData(t, stream), token, null);
         }
 
-        private async Task<string> ProcessQuery(Uri uri, Func<IDataRetriever, CancellationToken, Task> query, CancellationToken token, Action<HttpWebRequest> modify)
+        private async Task<string> ProcessQuery(Uri uri, Func<IDataRetriever, CancellationToken, Task> query, CancellationToken token, Action<HttpWebRequest> modify, Encoding encoding = null)
         {
-            using (var retriever = retrieverFactory(uri))
-            {
-                retriever.Modifier = modify;
-                retriever.AllowGlobalRedirection = true;
-                retriever.AllCookies = collection;
-                await resilience.WebPolicy.ExecuteAsync(t => query(retriever, t), token).ConfigureAwait(false);
-                collection = retriever.AllCookies;
-                return retriever.Data;
-            }
+            using var retriever = retrieverFactory(uri);
+            retriever.Modifier = modify;
+            retriever.DefaultEncoding = encoding ?? Encoding.UTF8;
+            retriever.AllowGlobalRedirection = true;
+            retriever.AllCookies = collection;
+            await resilience.WebPolicy.ExecuteAsync(t => query(retriever, t), token).ConfigureAwait(false);
+            collection = retriever.AllCookies;
+            return retriever.Data;
         }
     }
 }

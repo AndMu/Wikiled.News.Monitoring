@@ -5,6 +5,6 @@ namespace Wikiled.News.Monitoring.Feeds
 {
     public interface IFeedsHandler
     {
-        IObservable<ArticleDefinition> GetArticles();
+        IObservable<ArticleDefinition> GetArticles(int cuttoff = 10);
     }
 }

@@ -1,27 +1,22 @@
 using NUnit.Framework;
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Wikiled.News.Monitoring.Tests.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using Wikiled.News.Monitoring.Retriever;
 
 namespace Wikiled.News.Monitoring.Tests.Acceptance
 {
     [TestFixture]
     public class TrackedRetrievalTests
     {
-        private NetworkHelper instance;
-
-        [SetUp]
-        public void Setup()
-        {
-            instance = new NetworkHelper();
-        }
-
         [Test]
         public async Task Read()
         {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             var source = new CancellationTokenSource(1000);
-            var result = await instance.Retrieval.Read(new Uri( "http://www.bbc.co.uk"), source.Token).ConfigureAwait(false);
+            var result = await Global.Services.GetRequiredService<ITrackedRetrieval>().Read(new Uri("https://www.interfax.ru/business/793954"), source.Token, encoding: Encoding.GetEncoding("windows-1251")).ConfigureAwait(false);
             Assert.IsNotEmpty(result);
         }
     }

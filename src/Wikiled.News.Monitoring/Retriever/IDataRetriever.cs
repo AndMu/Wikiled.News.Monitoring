@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,6 +10,8 @@ namespace Wikiled.News.Monitoring.Retriever
     public interface IDataRetriever : IDisposable
     {
         Action<HttpWebRequest> Modifier { get; set; }
+
+        Encoding DefaultEncoding { get; set; }
 
         CookieCollection AllCookies { get; set; }
 
