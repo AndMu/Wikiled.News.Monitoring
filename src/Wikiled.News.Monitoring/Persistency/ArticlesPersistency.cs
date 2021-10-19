@@ -38,7 +38,7 @@ namespace Wikiled.News.Monitoring.Persistency
                 {
                     if (!File.Exists(file))
                     {
-                        currentPath.EnsureDirectoryExistence();
+                        Path.GetDirectoryName(file).EnsureDirectoryExistence();
                         File.WriteAllBytes(file, data);
                     }
                 }
