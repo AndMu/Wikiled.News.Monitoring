@@ -1,0 +1,44 @@
+﻿namespace Wikiled.News.Monitoring.Data
+{
+    public enum Language
+    {
+        Arabic,
+        Croatian,
+        Czech,
+        Dutch,
+        Danish,
+        English,
+        Esperanto,
+        Estonian,
+        Finnish,
+        French,
+        German,
+        Greek,
+        Hebrew,
+        Italian,
+        JapaneseKanaRomaji,
+        JapaneseKanjiKana,
+        JapaneseKanjiRomaji,
+        JapaneseRomajiKanji,
+        Latin,
+        Latvian,
+        Lithuanian,
+        Norwegian,
+        Persian,
+        PersianFarsi,
+        Polish,
+        Portuguese,
+        Romanian,
+        Russian,
+        Serbian,
+        SimpleChinese,
+        Slovak,
+        Spanish,
+        Swedish,
+        Thai,
+        Turkish,
+        Ukrainian,
+        Yiddish
+
+    }
+}
