@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 
 namespace Wikiled.News.Monitoring.Data
 {
@@ -11,12 +10,15 @@ namespace Wikiled.News.Monitoring.Data
             Content = articleContent ?? throw new ArgumentNullException(nameof(articleContent));
             DateTime = dateTime;
             Comments = comments ?? throw new ArgumentNullException(nameof(comments));
+            Language = Definition.Feed.Language;
         }
 
         public void RefreshComments(CommentData[] comments)
         {
             Comments = comments;
         }
+
+        public string Language { get; set; }
 
         public DateTime DateTime { get; }
 
