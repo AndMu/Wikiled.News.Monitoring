@@ -32,7 +32,7 @@ namespace Wikiled.News.Monitoring.Persistency
                 logger.LogInformation("Saving: {0}", article.Definition.Title);
                 var output = JsonConvert.SerializeObject(article, Formatting.Indented);
                 var currentPath = article.Definition.Feed == null ? config.Location : Path.Combine(config.Location, article.Definition.Feed.Category);
-                var file = Path.Combine(currentPath, article.Language.ToString(), $"{article.Definition.Title.CreateLetterText()}_{DateTime.UtcNow.Ticks}.zip");
+                var file = Path.Combine(currentPath, article.Definition?.Feed?.Language ?? string.Empty, $"{article.Definition.Title.CreateLetterText()}_{DateTime.UtcNow.Ticks}.zip");
                 var data = output.Zip($"{article.Definition.Title.CreateLetterText()}.json", Encoding.UTF8);
                 lock (syncRoot)
                 {

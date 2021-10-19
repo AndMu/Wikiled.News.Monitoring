@@ -18,10 +18,6 @@ namespace Wikiled.News.Monitoring.Data
             Comments = comments;
         }
 
-        public Encoding Encoding { get; set; } = Encoding.UTF8;
-
-        public Language Language { get; set; } = Language.English;
-
         public DateTime DateTime { get; }
 
         public ArticleDefinition Definition { get; }

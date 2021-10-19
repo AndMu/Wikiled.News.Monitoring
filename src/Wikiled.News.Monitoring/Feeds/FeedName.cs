@@ -6,6 +6,8 @@
 
         public string Category { get; set; }
 
+        public string Language { get; set; } = "en";
+
         public string Url { get; set; }
     }
 }
