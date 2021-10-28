@@ -64,7 +64,7 @@ namespace Wikiled.News.Monitoring.Monitoring
         public IObservable<Article> NewArticlesStream()
         {
             logger.LogDebug("NewArticlesStream");
-            var scanFeed = handler.GetArticles(config.DaysCutOff).RepeatAfterDelay(TimeSpan.FromHours(1), scheduler)
+            var scanFeed = handler.GetArticles(config.DaysCutOff).RepeatAfterDelay(TimeSpan.FromMinutes(config.ScanTime), scheduler)
                                   .Where(item => !scanned.ContainsKey(item.Id) && !tokenSource.IsCancellationRequested)
                                   .Select(ArticleReceived)
                                   .Merge()

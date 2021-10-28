@@ -42,7 +42,6 @@ namespace Wikiled.News.Monitoring.Readers
 
         public async Task Initialize(CancellationToken token)
         {
-            logger.LogDebug("Initialize");
             if (isDisposed)
             {
                 throw new ObjectDisposedException("Can't initialize Already disposed");
@@ -65,7 +64,6 @@ namespace Wikiled.News.Monitoring.Readers
                 }
 
                 isInitialized = true;
-                logger.LogDebug("Initialized");
             }
             finally
             {
