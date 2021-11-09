@@ -44,8 +44,7 @@ namespace Wikiled.News.Monitoring.Feeds
 
         private async IAsyncEnumerable<ArticleDefinition> ProcessFeed(int cuttoff)
         {
-            logger.LogInformation("Getting articles...");
-
+            logger.LogTrace("Getting articles...");
             var tasks = new List<(FeedName Feed, Task<Feed> Task)>();
             foreach (var feed in feeds)
             {
@@ -69,11 +68,11 @@ namespace Wikiled.News.Monitoring.Feeds
                     article.Element = item.SpecificItem.Element;
                     if (article.Date < cutOff)
                     {
-                        logger.LogDebug("Ignoring old definition {0} [{1}]...", article.Title, article.Date);
+                        logger.LogTrace("Ignoring old definition {0} [{1}]...", article.Title, article.Date);
                         continue;
                     }
 
-                    logger.LogDebug("Found definition {0} [{1}] and id [{2}]...", article.Title, article.Date, article.Id);
+                    logger.LogTrace("Found definition {0} [{1}] and id [{2}]...", article.Title, article.Date, article.Id);
                     yield return article;
                 }
             }
@@ -81,7 +80,7 @@ namespace Wikiled.News.Monitoring.Feeds
 
         private async Task<Feed> GetFeed(Uri uri)
         {
-            logger.LogDebug("Quering {0}...", uri);
+            logger.LogTrace("Quering {0}...", uri);
             using var client = new HttpClient();
             client.BaseAddress = uri;
             var feedData = await client.GetStringAsync(string.Empty);
