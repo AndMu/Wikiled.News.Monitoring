@@ -90,6 +90,7 @@ namespace Wikiled.News.Monitoring.Readers
 
             try
             {
+                logger.LogDebug("Starting...");
                 await calls.WaitAsync(token).ConfigureAwait(false);
                 if (httpConfiguration.CallDelay > 0)
                 {
@@ -97,6 +98,7 @@ namespace Wikiled.News.Monitoring.Readers
                     await Task.Delay(httpConfiguration.CallDelay, token).ConfigureAwait(false);
                 }
 
+                logger.LogDebug("Processing..");
                 var result = await logic().ConfigureAwait(false);
                 if (httpConfiguration.CallDelay > 0)
                 {

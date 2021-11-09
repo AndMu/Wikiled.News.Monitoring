@@ -124,9 +124,9 @@ namespace Wikiled.News.Monitoring.Monitoring
                 }
 
                 scannedLookup[transformed.Id] = true;
-
                 var result = await reader.Read(transformed, tokenSource.Token).ConfigureAwait(false);
                 scanned[transformed.Id] = result;
+                logger.LogDebug("ArticleReceived - DONE: {0}({1})", transformed.Title, transformed.Id);
                 return result;
             }
             catch (Exception e)
