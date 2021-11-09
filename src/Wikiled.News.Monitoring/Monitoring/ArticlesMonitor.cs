@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,7 +7,6 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Wikiled.News.Monitoring.Config;
 using Wikiled.News.Monitoring.Data;
 using Wikiled.News.Monitoring.Extensions;
@@ -27,25 +27,27 @@ namespace Wikiled.News.Monitoring.Monitoring
 
         private readonly ConcurrentDictionary<string, bool> scannedLookup = new ConcurrentDictionary<string, bool>();
 
-        private readonly IArticleDataReader reader;
+        private readonly ConcurrentDictionary<string, IArticleDataReader> readersTable = new ConcurrentDictionary<string, IArticleDataReader>();
+
+        private readonly Func<IArticleDataReader> readerFact;
 
         private readonly IDefinitionTransformer transformer;
 
         private readonly MonitoringConfig config;
 
         private readonly CancellationTokenSource tokenSource = new CancellationTokenSource();
-
+        
         public ArticlesMonitor(ILogger<ArticlesMonitor> logger,
                                IScheduler scheduler,
                                IFeedsHandler handler,
-                               IArticleDataReader reader,
+                               Func<IArticleDataReader> reader,
                                IDefinitionTransformer transformer, 
                                MonitoringConfig config) 
         {
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
             this.scheduler = scheduler ?? throw new ArgumentNullException(nameof(scheduler));
             this.handler = handler ?? throw new ArgumentNullException(nameof(handler));
-            this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
+            this.readerFact = reader ?? throw new ArgumentNullException(nameof(reader));
             this.transformer = transformer ?? throw new ArgumentNullException(nameof(transformer));
             this.config = config ?? throw new ArgumentNullException(nameof(config));
         }
@@ -99,6 +101,7 @@ namespace Wikiled.News.Monitoring.Monitoring
         {
             try
             {
+                var reader = readersTable.GetOrAdd(article.Definition.Url.Host, s => readerFact());
                 var comments = await reader.ReadComments(article.Definition, tokenSource.Token).ConfigureAwait(false);
                 article.RefreshComments(comments);
                 return article;
@@ -124,6 +127,7 @@ namespace Wikiled.News.Monitoring.Monitoring
                 }
 
                 scannedLookup[transformed.Id] = true;
+                var reader = readersTable.GetOrAdd(transformed.Url.Host, s => readerFact());
                 var result = await reader.Read(transformed, tokenSource.Token).ConfigureAwait(false);
                 scanned[transformed.Id] = result;
                 logger.LogDebug("ArticleReceived - DONE: {0}({1})", transformed.Title, transformed.Id);
