@@ -18,7 +18,7 @@ namespace Wikiled.News.Monitoring.Containers
         {
             services.RegisterModule<CommonModule>();
             services.AddTransient<ITrackedRetrieval, TrackedRetrieval>();
-            services.AddTransient<IReadingSession, ReadingSession>();
+            services.AddSingleton<IReadingSession, ReadingSession>();
             services.AddTransient<IArticleDataReader, ArticleDataReader>();
             services.AddSingleton<IArticlesMonitor, ArticlesMonitor>();
             services.AddTransient<IFeedsHandler, FeedsHandler>();
