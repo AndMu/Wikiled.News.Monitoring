@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Wikiled.Common.Utilities.Modules;
@@ -19,7 +20,8 @@ namespace Wikiled.News.Monitoring.Containers
             services.RegisterModule<CommonModule>();
             services.AddTransient<ITrackedRetrieval, TrackedRetrieval>();
             services.AddTransient<IReadingSession, ReadingSession>();
-            services.AddTransient<IArticleDataReader, ArticleDataReader>();
+            services.AddTransient<ArticleDataReader>();
+            services.AddSingleton<Func<IArticleDataReader>>(ctx => ctx.GetRequiredService<ArticleDataReader>);
             services.AddSingleton<IArticlesMonitor, ArticlesMonitor>();
             services.AddTransient<IFeedsHandler, FeedsHandler>();
             services.AddTransient<IArticlesPersistency, ArticlesPersistency>();

@@ -4,13 +4,17 @@ namespace Wikiled.News.Monitoring.Data
 {
     public class Article
     {
-        public Article(ArticleDefinition definition, CommentData[] comments, ArticleContent articleContent, DateTime dateTime)
+        public Article(
+            ArticleDefinition definition,
+            CommentData[] comments,
+            ArticleContent articleContent,
+            DateTime dateTime)
         {
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
             Content = articleContent ?? throw new ArgumentNullException(nameof(articleContent));
             DateTime = dateTime;
             Comments = comments ?? throw new ArgumentNullException(nameof(comments));
-            Language = Definition.Feed.Language;
+            Language = Definition.Feed?.Language;
         }
 
         public void RefreshComments(CommentData[] comments)

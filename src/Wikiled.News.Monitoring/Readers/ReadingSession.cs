@@ -23,9 +23,7 @@ namespace Wikiled.News.Monitoring.Readers
 
         private readonly RetrieveConfiguration httpConfiguration;
 
-        private readonly SemaphoreSlim calls;
-
-        private readonly SemaphoreSlim initializationLock = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim callsLock = new SemaphoreSlim(1, 1);
 
         public ReadingSession(
             ILogger<ReadingSession> logger,
@@ -37,7 +35,6 @@ namespace Wikiled.News.Monitoring.Readers
             this.httpConfiguration = httpConfiguration ?? throw new ArgumentNullException(nameof(httpConfiguration));
             this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
             this.provider = provider ?? throw new ArgumentNullException(nameof(provider));
-            calls = new SemaphoreSlim(httpConfiguration.MaxConcurrent);
         }
 
         public async Task Initialize(CancellationToken token)
@@ -55,7 +52,13 @@ namespace Wikiled.News.Monitoring.Readers
 
             try
             {
-                await initializationLock.WaitAsync(token).ConfigureAwait(false);
+                await callsLock.WaitAsync(token).ConfigureAwait(false);
+                if (isInitialized)
+                {
+                    logger.LogDebug("Already initialized");
+                    return;
+                }
+
                 var result = await provider.GetRequiredService<IAuthentication>().Authenticate(reader, token).ConfigureAwait(false);
                 if (!result)
                 {
@@ -67,7 +70,7 @@ namespace Wikiled.News.Monitoring.Readers
             }
             finally
             {
-                initializationLock.Release();
+                callsLock.Release();
             }
         }
 
@@ -90,17 +93,19 @@ namespace Wikiled.News.Monitoring.Readers
 
             try
             {
-                await calls.WaitAsync(token).ConfigureAwait(false);
+                logger.LogTrace("Starting...");
+                await callsLock.WaitAsync(token).ConfigureAwait(false);
                 if (httpConfiguration.CallDelay > 0)
                 {
-                    logger.LogDebug("Wait until calling...");
+                    logger.LogTrace("Wait until calling...");
                     await Task.Delay(httpConfiguration.CallDelay, token).ConfigureAwait(false);
                 }
 
+                logger.LogDebug("Processing..");
                 var result = await logic().ConfigureAwait(false);
                 if (httpConfiguration.CallDelay > 0)
                 {
-                    logger.LogDebug("Cooldown after calling...");
+                    logger.LogTrace("Cooldown after calling...");
                     await Task.Delay(httpConfiguration.CallDelay, token).ConfigureAwait(false);
                 }
 
@@ -114,16 +119,8 @@ namespace Wikiled.News.Monitoring.Readers
             finally
             {
                 isInitialized = false;
-                calls.Release();
+                callsLock.Release();
             }
-        }
-
-        public void Dispose()
-        {
-            logger.LogDebug("Dispose");
-            isDisposed = true;
-            calls?.Dispose();
-            initializationLock?.Dispose();
         }
     }
 }

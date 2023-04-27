@@ -29,7 +29,9 @@ namespace Wikiled.News.Monitoring.Readers
             }
 
             definition.Date ??= DateTime.UtcNow;
-            return new Article(definition, await comments.ConfigureAwait(false), readArticle, DateTime.UtcNow);
+            var article = new Article(definition, await comments.ConfigureAwait(false), readArticle, DateTime.UtcNow);
+            logger.LogDebug("Reading article: {0}[{1}] Completed", definition.Title, definition.Id);
+            return article;
         }
 
         public Task<CommentData[]> ReadComments(ArticleDefinition definition, CancellationToken token)

@@ -1,35 +1,34 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Moq" Version="4.16.1" />
-    <PackageReference Include="NUnit" Version="3.13.2" />
-    <packagereference Include="Microsoft.NET.Test.Sdk" Version="16.11.0"></packagereference>
-    <packagereference Include="NUnit3TestAdapter" Version="4.0.0">
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
+    <PackageReference Include="Moq" Version="4.18.4" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <packagereference Include="Microsoft.NET.Test.Sdk" Version="17.5.0"></packagereference>
+    <packagereference Include="NUnit3TestAdapter" Version="4.4.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </packagereference>
     <PackageReference Include="System.Reactive" Version="5.0.0" />
-    <PackageReference Include="CodeHollow.FeedReader" Version="1.2.2" />
+    <PackageReference Include="CodeHollow.FeedReader" Version="1.2.6" />
     <PackageReference Include="Fizzler.Systems.HtmlAgilityPack" Version="1.2.1" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
-    <PackageReference Include="Polly" Version="7.2.2" />
-    <PackageReference Include="Wikiled.Common" Version="1.2.1" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="5.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
+    <PackageReference Include="Polly" Version="7.2.3" />
+    <PackageReference Include="Wikiled.Common" Version="1.2.2" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
 
-    <PackageReference Include="Serilog" Version="2.10.0" />
-    <PackageReference Include="Serilog.Enrichers.Context" Version="4.2.0" />
+    <PackageReference Include="Serilog" Version="2.12.0" />
+    <PackageReference Include="Serilog.Enrichers.Context" Version="4.6.0" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="2.2.0" />
     <PackageReference Include="Serilog.Enrichers.Thread" Version="3.1.0" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="3.2.0" />
-    <PackageReference Include="Serilog.Sinks.RollingFile" Version="3.3.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
+    <PackageReference Include="Serilog.Settings.Configuration" Version="3.4.0" />
     <PackageReference Include="Serilog.Sinks.NUnit" Version="1.0.3" />
   </ItemGroup>
 

@@ -20,7 +20,7 @@ namespace Wikiled.News.Monitoring.Tests.Acceptance
                 Url = new Uri(@"http://www.guardian.co.uk")
             };
 
-            var article = await Global.Services.GetRequiredService<IArticleDataReader>().Read(articleDefinition, tokenSource.Token).ConfigureAwait(false);
+            var article = await Global.Services.GetRequiredService<Func<IArticleDataReader>>()().Read(articleDefinition, tokenSource.Token).ConfigureAwait(false);
             Assert.Greater(article.Content.Text.Length, 100);
         }
     }

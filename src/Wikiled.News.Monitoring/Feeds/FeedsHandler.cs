@@ -21,7 +21,7 @@ namespace Wikiled.News.Monitoring.Feeds
             this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IObservable<ArticleDefinition> GetArticles(int cuttoff=10)
+        public IObservable<ArticleDefinition> GetArticles(int cuttoff = 10)
         {
             return Observable.Create<ArticleDefinition>(
                 async observer =>
@@ -44,8 +44,7 @@ namespace Wikiled.News.Monitoring.Feeds
 
         private async IAsyncEnumerable<ArticleDefinition> ProcessFeed(int cuttoff)
         {
-            logger.LogInformation("Getting articles...");
-
+            logger.LogDebug("Getting articles...");
             var tasks = new List<(FeedName Feed, Task<Feed> Task)>();
             foreach (var feed in feeds)
             {
@@ -81,6 +80,7 @@ namespace Wikiled.News.Monitoring.Feeds
 
         private async Task<Feed> GetFeed(Uri uri)
         {
+            logger.LogDebug("Quering {0}...", uri);
             using var client = new HttpClient();
             client.BaseAddress = uri;
             var feedData = await client.GetStringAsync(string.Empty);
